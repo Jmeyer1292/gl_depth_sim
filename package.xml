@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gl_depth_sim</name>
+  <version>0.0.1</version>
+  <description>The gl_depth_sim package</description>
+
+  <maintainer email="jmeyer@todo.todo">jmeyer</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+
+</package>
