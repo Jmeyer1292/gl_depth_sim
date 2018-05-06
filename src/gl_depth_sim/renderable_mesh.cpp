@@ -2,6 +2,7 @@
 #include "gl_depth_sim/glad/glad.h"
 
 gl_depth_sim::RenderableMesh::RenderableMesh(const gl_depth_sim::Mesh& mesh)
+  : num_indices_{mesh.numIndices()}
 {
   // TODO: Do I need to keep around the mesh in this object?
   setupGL(mesh);

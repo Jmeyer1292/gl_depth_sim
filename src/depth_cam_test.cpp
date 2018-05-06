@@ -15,7 +15,7 @@ int main()
   props.cx = props.width / 2;
   props.cy = props.height / 2;
   props.z_near = 0.25f;
-  props.z_far = 8.0f;
+  props.z_far = 10.0f;
 
   gl_depth_sim::SimDepthCamera sim (props);
 
