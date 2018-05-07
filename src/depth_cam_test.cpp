@@ -27,7 +27,20 @@ int main()
   {
     if (line == "q") break;
 
-    auto depth_img = sim.render(Eigen::Affine3d::Identity());
+    double x, y, z;
+
+    std::istringstream iss (line);
+    iss >> x >> y >> z;
+
+    Eigen::Affine3d pose; pose = Eigen::Translation3d(x,y,z);
+
+    Eigen::Matrix3d m;
+    m << 0, 0,  1,
+         -1, 0, 0,
+         0, -1, 0;
+    pose.linear() = m;
+
+    auto depth_img = sim.render(pose);
 
   }
 

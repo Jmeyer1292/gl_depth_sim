@@ -114,7 +114,13 @@ gl_depth_sim::SimDepthCamera::~SimDepthCamera()
   glfwTerminate();
 }
 
-static double t = 0.0;
+static float linearDepth(float depthSample, const float zNear, const float zFar)
+{
+  if (depthSample == 1.0f) return 0.0;
+  depthSample = 2.0 * depthSample - 1.0;
+  float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
+  return zLinear;
+}
 
 static glm::mat4 toGLM(const Eigen::Affine3d& pose)
 {
@@ -132,48 +138,11 @@ static glm::mat4 toGLM(const Eigen::Affine3d& pose)
 
 gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affine3d& pose)
 {
-  t += 0.1;
 
-  float x = 3.0 * cos(t);
-  float y = 3.0 * sin(t);
-  float z = 1.0;//2.0 * cos(t);
+  // To OpenGL
+  Eigen::Affine3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
 
-
-//  float x = 1.0, y=1.0, z= 1.0;
-  glm::mat4 view = glm::lookAt(
-    glm::vec3(x,y,z), // Camera is at (4,3,3), in World Space
-    glm::vec3(0,0,0), // and looks at the origin
-    glm::vec3(0,0,1)  // Head is up (set to 0,-1,0 to look upside-down)
-  );
-  std::cout << "View matrix\n" << view << "\n";
-
-  Eigen::Affine3d p;
-  p.setIdentity();
-
-  // Define a pose looking at 0,0,0 from x,y,z
-
-  {
-    Eigen::Vector3d z_axis = (Eigen::Vector3d(x,y,z) - Eigen::Vector3d(0,0,0)).normalized();
-    Eigen::Vector3d y_hint = Eigen::Vector3d(0, 0, 1);
-    Eigen::Vector3d x_axis = (y_hint.cross(z_axis).normalized());
-    Eigen::Vector3d y_axis = (z_axis.cross(x_axis).normalized());
-
-    p.matrix().col(0).head<3>() = x_axis;
-    p.matrix().col(1).head<3>() = y_axis;
-    p.matrix().col(2).head<3>() = z_axis;
-    p.translation() = Eigen::Vector3d(x,y,z);
-
-    std::cout << "P\n" << p.matrix() << "\n";
-
-    std::cout << "PINV\n" << p.inverse().matrix() << "\n";
-
-  }
-
-  std::cout << "p2\n" << p.matrix() << "\n";
-
-  view = toGLM(p.inverse());
-
-  std::cout << "AFTER CONVERSION\n" << view << "\n\n";
+  auto view = toGLM(view_gl);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_DEPTH_TEST);
@@ -188,10 +157,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
     glBindVertexArray(obj.mesh->vao());
 
     // compute mvp
-    glm::mat4 model (1.0f);
-
-    //     TODO:
-    //    model = obj.pose
+    glm::mat4 model = toGLM(obj.pose);
     glm::mat4 mvp = projection_ * view * model;
     depth_program_->setUniformMat4("mvp", mvp);
 
@@ -205,7 +171,12 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   img.rows = camera_.height;
   img.data.resize(img.cols * img.rows);
 
-//  glReadPixels(0, 0, camera_.height, camera_.width, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
+  glReadPixels(0, 0, camera_.height, camera_.width, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
+
+  for (auto& depth : img.data)
+  {
+    depth = linearDepth(depth, camera_.z_near, camera_.z_far);
+  }
 
   glfwSwapBuffers(window_);
 
