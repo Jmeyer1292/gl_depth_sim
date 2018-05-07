@@ -5,8 +5,6 @@
 
 int main()
 {
-  std::string line;
-
   gl_depth_sim::CameraProperties props;
   props.width = 640;
   props.height = 480;
@@ -23,6 +21,7 @@ int main()
 
   sim.add(*mesh_ptr, Eigen::Affine3d::Identity());
 
+  std::string line;
   while (std::getline(std::cin, line))
   {
     if (line == "q") break;

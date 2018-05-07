@@ -5,16 +5,20 @@ add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  pcl_ros
 )
 
+# Required for core functionality
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(assimp REQUIRED)
+find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(Eigen3 REQUIRED)
+
+find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
+  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   CATKIN_DEPENDS roscpp
 #  DEPENDS opengl
 )
@@ -45,12 +49,27 @@ target_link_libraries(${PROJECT_NAME}
   glfw
 )
 
+# Libaries for interfacing with opencv and pcl
+add_library(${PROJECT_NAME}_interfaces
+  src/interfaces/pcl_interface.cpp
+  src/interfaces/opencv_interface.cpp
+)
+
+add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(${PROJECT_NAME}_interfaces
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+
 add_executable(${PROJECT_NAME}_test src/depth_cam_test.cpp)
 
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME test PREFIX "")
 
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
 )
 
 install(TARGETS ${PROJECT_NAME}

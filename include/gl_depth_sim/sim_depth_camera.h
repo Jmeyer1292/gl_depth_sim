@@ -1,6 +1,7 @@
 #ifndef GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 #define GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 
+#include "gl_depth_sim/camera_properties.h"
 #include "gl_depth_sim/renderable_mesh.h"
 #include "gl_depth_sim/shader_program.h"
 #include <GLFW/glfw3.h>
@@ -12,22 +13,6 @@
 
 namespace gl_depth_sim
 {
-
-struct CameraProperties
-{
-  int width, height;
-
-  float fx, fy;
-  float cx, cy;
-
-  float z_near, z_far;
-};
-
-struct DepthImage
-{
-  int rows, cols;
-  std::vector<float> data;
-};
 
 struct RenderableObjectState
 {
