@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
   if (argc != 2)
   {
-    std::cerr << "Usage: ./depth_test <PATH_TO_MESH>\n";
+    std::cerr << "Usage: ./depth_example <PATH_TO_MESH>\n";
     return 1;
   }
 

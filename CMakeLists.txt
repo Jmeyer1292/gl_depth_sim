@@ -63,9 +63,9 @@ target_link_libraries(${PROJECT_NAME}_interfaces
 )
 
 # Test node for devel purposes
-add_executable(${PROJECT_NAME}_test src/depth_cam_test.cpp)
+add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
 
-set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_test PREFIX "")
+set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
 
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
