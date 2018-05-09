@@ -12,7 +12,7 @@ void gl_depth_sim::project(const gl_depth_sim::CameraProperties& camera, const g
   {
     for (int j = 0; j < depth.cols; ++j)
     {
-      const float distance = depth.data[i * depth.cols + j];
+      const float distance = depth.distance(i, j);//depth.data[i * depth.cols + j];
       pcl::PointXYZ& pt = out(j, i);
 
       if (distance != 0.0f)

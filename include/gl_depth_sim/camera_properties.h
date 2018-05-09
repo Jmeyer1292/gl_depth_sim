@@ -20,6 +20,13 @@ struct DepthImage
 {
   int rows, cols;
   std::vector<float> data;
+
+  float distance(int row, int col) const
+  {
+    const int y = rows - row - 1;
+    const int x = col;
+    return data[y * cols + x];
+  }
 };
 
 }
