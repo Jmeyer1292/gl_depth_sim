@@ -52,7 +52,7 @@ int main()
     cv::imwrite("img.png", img);
 
     pcl::PointCloud<pcl::PointXYZ> cloud;
-    gl_depth_sim::project(props, depth_img, cloud);
+    gl_depth_sim::toPointCloudXYZ(props, depth_img, cloud);
     pcl::io::savePCDFileBinary("cloud.pcd", cloud);
   }
 

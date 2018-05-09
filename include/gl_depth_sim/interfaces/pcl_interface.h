@@ -9,7 +9,7 @@
 namespace gl_depth_sim
 {
 
-void project(const CameraProperties& camera, const DepthImage& depth, pcl::PointCloud<pcl::PointXYZ>& out);
+void toPointCloudXYZ(const CameraProperties& camera, const DepthImage& depth, pcl::PointCloud<pcl::PointXYZ>& out);
 
 }
 
