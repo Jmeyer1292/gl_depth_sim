@@ -9,8 +9,14 @@
 #include <pcl/io/pcd_io.h>
 #include <opencv2/highgui/highgui.hpp>
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc != 2)
+  {
+    std::cerr << "Usage: ./depth_test <PATH_TO_MESH>\n";
+    return 1;
+  }
+
   gl_depth_sim::CameraProperties props;
   props.width = 640;
   props.height = 480;
@@ -23,10 +29,19 @@ int main()
 
   gl_depth_sim::SimDepthCamera sim (props);
 
-  auto mesh_ptr = gl_depth_sim::loadMesh("/home/jmeyer/untitled.stl");
+  auto mesh_ptr = gl_depth_sim::loadMesh(argv[1]);
+
+  if (!mesh_ptr)
+  {
+    std::cerr << "Unable to load mesh from path: " << argv[1] << "\n";
+    return 1;
+  }
 
   sim.add(*mesh_ptr, Eigen::Affine3d::Identity());
 
+  std::cout << "Camera is looking down the positive x axis\n";
+  std::cout << "Enter 'q' and press enter to quit\n";
+  std::cout << "Input the camera positiion (x,y,z) with spaces in between and press enter:\n";
   std::string line;
   while (std::getline(std::cin, line))
   {
