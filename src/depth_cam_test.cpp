@@ -1,7 +1,13 @@
 #include "gl_depth_sim/sim_depth_camera.h"
 #include "gl_depth_sim/mesh_loader.h"
 
+#include "gl_depth_sim/interfaces/pcl_interface.h"
+#include "gl_depth_sim/interfaces/opencv_interface.h"
+
 #include <iostream>
+
+#include <pcl/io/pcd_io.h>
+#include <opencv2/highgui/highgui.hpp>
 
 int main()
 {
@@ -41,6 +47,13 @@ int main()
 
     auto depth_img = sim.render(pose);
 
+    cv::Mat img;
+    gl_depth_sim::toCvImage16u(depth_img, img);
+    cv::imwrite("img.png", img);
+
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    gl_depth_sim::project(props, depth_img, cloud);
+    pcl::io::savePCDFileBinary("cloud.pcd", cloud);
   }
 
   return 0;

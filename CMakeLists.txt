@@ -60,6 +60,7 @@ add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 target_link_libraries(${PROJECT_NAME}_interfaces
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 
 # Test node for devel purposes
@@ -69,6 +70,7 @@ set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME test PREFIX ""
 
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}
 )
 

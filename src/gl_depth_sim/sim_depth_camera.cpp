@@ -171,7 +171,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   img.rows = camera_.height;
   img.data.resize(img.cols * img.rows);
 
-  glReadPixels(0, 0, camera_.height, camera_.width, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
+  glReadPixels(0, 0, camera_.width, camera_.height, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
 
   for (auto& depth : img.data)
   {
