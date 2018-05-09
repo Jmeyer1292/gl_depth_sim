@@ -12,7 +12,7 @@ void gl_depth_sim::toPointCloudXYZ(const gl_depth_sim::CameraProperties& camera,
   {
     for (int j = 0; j < depth.cols; ++j)
     {
-      const float distance = depth.distance(i, j);//depth.data[i * depth.cols + j];
+      const float distance = depth.distance(i, j);
       pcl::PointXYZ& pt = out(j, i);
 
       if (distance != 0.0f)

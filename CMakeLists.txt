@@ -20,7 +20,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   CATKIN_DEPENDS roscpp
-#  DEPENDS opengl
 )
 
 include_directories(
@@ -72,16 +71,6 @@ target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}
-)
-
-# Demonstrator for ROS stuff
-add_executable(${PROJECT_NAME}_sim_node src/depth_camera_simulation_node.cpp)
-
-set_target_properties(${PROJECT_NAME}_sim_node PROPERTIES OUTPUT_NAME ros_simulation PREFIX "")
-
-target_link_libraries(${PROJECT_NAME}_sim_node
-  ${PROJECT_NAME}
-  ${PROJECT_NAME}_interfaces
 )
 
 install(TARGETS ${PROJECT_NAME}

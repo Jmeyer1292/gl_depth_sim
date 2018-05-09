@@ -4,9 +4,9 @@
   <version>0.0.1</version>
   <description>The gl_depth_sim package</description>
 
-  <maintainer email="jmeyer@todo.todo">jmeyer</maintainer>
+  <maintainer email="Jmeyer1292@gmail.com">Jonathan Meyer</maintainer>
 
-  <license>TODO</license>
+  <license>GPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>

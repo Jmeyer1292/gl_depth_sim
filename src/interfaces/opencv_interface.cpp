@@ -7,7 +7,7 @@ void gl_depth_sim::toCvImageFp(const gl_depth_sim::DepthImage& depth, cv::Mat& o
   {
     for (int x = 0; x < depth.cols; ++x)
     {
-      out.at<float>(y,x) = depth.data[y * depth.cols + x];
+      out.at<float>(y, x) = depth.distance(y, x);
     }
   }
 }
@@ -19,7 +19,7 @@ void gl_depth_sim::toCvImage16u(const gl_depth_sim::DepthImage& depth, cv::Mat& 
   {
     for (int x = 0; x < depth.cols; ++x)
     {
-      out.at<unsigned short>(y, x) = 1000.0f * depth.distance(y, x);//depth.data[y * depth.cols + x];
+      out.at<unsigned short>(y, x) = 1000.0f * depth.distance(y, x);
     }
   }
 }
