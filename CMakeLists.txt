@@ -62,12 +62,23 @@ target_link_libraries(${PROJECT_NAME}_interfaces
   ${OpenCV_LIBRARIES}
 )
 
-# Test node for devel purposes
+# Example showing basic usage
 add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
 
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
 
 target_link_libraries(${PROJECT_NAME}_test
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+  ${catkin_LIBRARIES}
+)
+
+# Example showing an orbiting camera
+add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
+
+set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
+
+target_link_libraries(${PROJECT_NAME}_orbit
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}
