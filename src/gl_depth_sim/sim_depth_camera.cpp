@@ -28,14 +28,14 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
   Eigen::Matrix4d m (Eigen::Matrix4d::Identity());
 
   // Organized by column
-  m(0,0) = 2.0f * camera.fx / camera.width;
-  m(1,1) = 2.0f * camera.fy/ camera.height;
-  m(0,2) = 1.0f - 2.0f * camera.cx / camera.width;
-  m(1,2) = 2.0f * camera.cy / camera.height - 1.0f;
+  m(0,0) = 2.0 * camera.fx / camera.width;
+  m(1,1) = 2.0 * camera.fy/ camera.height;
+  m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
+  m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
   m(2,2) = (camera.z_far + camera.z_near) / (camera.z_near - camera.z_far);
-  m(3,2) = -1.0f;
-  m(2,3) = 2.0f * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
-  m(3,3) = 0.0f;
+  m(3,2) = -1.0;
+  m(2,3) = 2.0 * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
+  m(3,3) = 0.0;
 
   return m;
 }
@@ -128,7 +128,7 @@ bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Affine3d& 
 
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
-//  glfwInit();
+//  glfwInit() is called by the glfw_guard object
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

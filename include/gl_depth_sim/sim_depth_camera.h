@@ -2,10 +2,9 @@
 #define GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 
 #include "gl_depth_sim/camera_properties.h"
+#include "gl_depth_sim/glfw_guard.h"
 #include "gl_depth_sim/renderable_mesh.h"
 #include "gl_depth_sim/shader_program.h"
-
-#include "gl_depth_sim/glfw_guard.h"
 
 #include <memory>
 #include <vector>
