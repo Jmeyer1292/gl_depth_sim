@@ -29,9 +29,9 @@ gl_depth_sim::ShaderProgram::ShaderProgram(const std::string& vertex_shader, con
   glGetShaderiv(fshader, GL_COMPILE_STATUS, &success);
   if (!success)
   {
-      glGetShaderInfoLog(fshader, log.size(), NULL, log.data());
-      std::cerr << "ERROR (FRAG SHADER COMPILATION): " << log.data() << "\n";
-      throw std::runtime_error("Fshader compile failed");
+    glGetShaderInfoLog(fshader, log.size(), NULL, log.data());
+    std::cerr << "ERROR (FRAG SHADER COMPILATION): " << log.data() << "\n";
+    throw std::runtime_error("Fshader compile failed");
   }
 
   // link shaders
@@ -44,9 +44,9 @@ gl_depth_sim::ShaderProgram::ShaderProgram(const std::string& vertex_shader, con
   glGetProgramiv(id_, GL_LINK_STATUS, &success);
   if (!success)
   {
-      glGetProgramInfoLog(id_, log.size(), NULL, log.data());
-      std::cerr << "ERROR (PROGRAM LINKING FAILED): " << log.data() << "\n";
-      throw std::runtime_error("program link failed");
+    glGetProgramInfoLog(id_, log.size(), NULL, log.data());
+    std::cerr << "ERROR (PROGRAM LINKING FAILED): " << log.data() << "\n";
+    throw std::runtime_error("program link failed");
   }
   glDeleteShader(vshader);
   glDeleteShader(fshader);
