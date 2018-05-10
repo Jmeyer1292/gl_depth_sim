@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   {
     double dt = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
 
-    const static double radius = 2.0;
+    const static double radius = 0.75;
     Eigen::Vector3d camera_pos (radius * cos(dt),
                                 radius * sin(dt),
                                 1.0 + sin(dt));

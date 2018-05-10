@@ -51,6 +51,12 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
     throw std::runtime_error("Failed to initialize GLAD");
   }
 
+  std::cout << "GL_VERSION: " << GLVersion.major << "." << GLVersion.minor << "\n";
+
+  if (GLAD_GL_ARB_clip_control) { std::cout << "Clip control supported\n"; }
+  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
+
   // Load Shaders
   depth_program_.reset(new ShaderProgram(vertex_shader_source, frag_shader_source));
 
