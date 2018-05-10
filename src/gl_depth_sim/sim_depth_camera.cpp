@@ -1,7 +1,7 @@
 #include "gl_depth_sim/glad/glad.h"
 #include "gl_depth_sim/sim_depth_camera.h"
 // OpenGL context
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #include <iostream>
 
@@ -59,7 +59,7 @@ gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
   glfwDestroyWindow(window_);
   glDeleteFramebuffers(1, &fbo_);
-  glfwTerminate();
+//  glfwTerminate();
 }
 
 static float linearDepth(float depthSample, const float zNear, const float zFar)
@@ -128,7 +128,7 @@ bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Affine3d& 
 
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
-  glfwInit();
+//  glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
