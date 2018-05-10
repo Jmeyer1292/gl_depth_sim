@@ -17,7 +17,7 @@ void toCvImageFp(const DepthImage& depth, cv::Mat& out);
 /**
  * @brief Converts "native" depth image type to an opencv image with depth data encoded as 16
  * bit unsigned ints representing the distance of a sample in millimeters (mm) from the image
- * plane.
+ * plane. Invalid entries are marked as being at a depth of 0.
  */
 void toCvImage16u(const DepthImage& depth, cv::Mat& out);
 

@@ -16,11 +16,19 @@ struct CameraProperties
   float z_near, z_far;
 };
 
+/**
+ * @brief A buffer for raw depth data. Depth buffers are fetched from opengl into this buffer and
+ * are then linearized.
+ */
 struct DepthImage
 {
   int rows, cols;
   std::vector<float> data;
 
+  /**
+   * @brief Returns the distance at a given row and column in the image given ROS coordinates! This means
+   * y down the height of the screen. OpenGL stores data Y UP so here we have to flip the row input.
+   */
   float distance(int row, int col) const
   {
     const int y = rows - row - 1;
