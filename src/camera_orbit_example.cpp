@@ -93,8 +93,6 @@ int main(int argc, char** argv)
 
     const auto depth_img = sim.render(pose);
 
-//    exit(1);
-
     frame_counter++;
 
     if (frame_counter % 100 == 0)
