@@ -4,17 +4,20 @@ project(gl_depth_sim)
 add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  pcl_ros
+  roscpp # Used for ROS examples
+  pcl_ros # Used for interfaces extension
+  tf # Used for ROS example
+  tf_conversions # Used for ROS example
 )
 
 # Required for core functionality
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(Eigen3 REQUIRED)
 
-find_package(OpenCV REQUIRED)
+# Extensions
+find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
+find_package(OpenCV REQUIRED) # Used for interface extension
 
 catkin_package(
   INCLUDE_DIRS include
@@ -80,6 +83,17 @@ add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
 set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
 
 target_link_libraries(${PROJECT_NAME}_orbit
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+  ${catkin_LIBRARIES}
+)
+
+# Example showing orbiting camera with point cloud publishing in ROS
+add_executable(${PROJECT_NAME}_ros_orbit src/camera_ros_example.cpp)
+
+set_target_properties(${PROJECT_NAME}_ros_orbit PROPERTIES OUTPUT_NAME ros_example PREFIX "")
+
+target_link_libraries(${PROJECT_NAME}_ros_orbit
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}

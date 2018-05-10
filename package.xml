@@ -11,4 +11,9 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
 
+  <!--Used for examples and interfacing-->
+  <depend>tf</depend>
+  <depend>tf_conversions</depend>
+  <depend>pcl_ros</depend>
+
 </package>
