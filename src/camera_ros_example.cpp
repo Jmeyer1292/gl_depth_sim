@@ -48,6 +48,11 @@ int main(int argc, char** argv)
   std::string camera_frame = pnh.param<std::string>("camera_frame", "camera");
 
   double radius = pnh.param<double>("radius", 1.0);
+  double z = pnh.param<double>("z", 1.0);
+
+  double focal_length = pnh.param<double>("focal_length", 550.0);
+  int width = pnh.param<int>("width", 640);
+  int height = pnh.param<int>("height", 480);
 
   auto mesh_ptr = gl_depth_sim::loadMesh(mesh_path);
 
@@ -58,13 +63,13 @@ int main(int argc, char** argv)
   }
 
   gl_depth_sim::CameraProperties props;
-  props.width = 640;
-  props.height = 480;
-  props.fx = 550.0f;
-  props.fy = 550.0f;
+  props.width = width;
+  props.height = height;
+  props.fx = focal_length;
+  props.fy = focal_length;
   props.cx = props.width / 2;
   props.cy = props.height / 2;
-  props.z_near = 0.25f;
+  props.z_near = 0.25;
   props.z_far = 10.0f;
 
   // Create the simulation
@@ -86,7 +91,7 @@ int main(int argc, char** argv)
 
     Eigen::Vector3d camera_pos (radius * cos(dt),
                                 radius * sin(dt),
-                                1.0 + sin(dt));
+                                z);
 
     Eigen::Vector3d look_at (0,0,0);
 

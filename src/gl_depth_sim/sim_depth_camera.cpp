@@ -59,7 +59,6 @@ gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
   glfwDestroyWindow(window_);
   glDeleteFramebuffers(1, &fbo_);
-//  glfwTerminate();
 }
 
 static float linearDepth(float depthSample, const float zNear, const float zFar)
@@ -153,7 +152,7 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
   // Enable clipping [0, 1]
   if (GLAD_GL_ARB_clip_control) { std::cout << "Clip control supported\n"; }
-  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+//  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
   // Disable V-sync if we can
   glfwSwapInterval(0);
