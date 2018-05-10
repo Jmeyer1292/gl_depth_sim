@@ -6,8 +6,6 @@
 #include "gl_depth_sim/shader_program.h"
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-
 #include <memory>
 #include <vector>
 
@@ -34,11 +32,11 @@ private:
   // State information
   CameraProperties camera_;
   std::vector<RenderableObjectState> objects_;
+  Eigen::Matrix4d proj_;
 
   // OpenGL context info
   GLFWwindow* window_;
   std::unique_ptr<ShaderProgram> depth_program_;
-  glm::mat4 projection_;
   unsigned int fbo_;
 };
 

@@ -57,14 +57,14 @@ gl_depth_sim::ShaderProgram::~ShaderProgram()
   glDeleteProgram(id_);
 }
 
-void gl_depth_sim::ShaderProgram::setUniformMat4(const std::string& attr, const glm::mat4& mat)
-{
-  GLuint loc = glGetUniformLocation(id_, attr.c_str());
-  glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
-}
-
 void gl_depth_sim::ShaderProgram::setInt(const std::string& attr, int val)
 {
   GLuint loc = glGetUniformLocation(id_, attr.c_str());
   glUniform1i(loc, val);
+}
+
+void gl_depth_sim::ShaderProgram::setUniformMat4(const std::string& attr, const Eigen::Matrix4f& mat)
+{
+  GLuint loc = glGetUniformLocation(id_, attr.c_str());
+  glUniformMatrix4fv(loc, 1, GL_FALSE, mat.data());
 }

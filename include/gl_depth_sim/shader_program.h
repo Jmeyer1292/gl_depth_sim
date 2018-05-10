@@ -1,8 +1,8 @@
 #ifndef GL_DEPTH_SIM_SHADER_PROGRAM_H
 #define GL_DEPTH_SIM_SHADER_PROGRAM_H
 
-#include <glm/glm.hpp>
 #include <string>
+#include <Eigen/Dense>
 
 namespace gl_depth_sim
 {
@@ -16,8 +16,8 @@ public:
   unsigned int id() const { return id_; }
 
   // Interaction with attributes
-  void setUniformMat4(const std::string& attr, const glm::mat4& mat);
   void setInt(const std::string& attr, int val);
+  void setUniformMat4(const std::string &attr, const Eigen::Matrix4f& mat);
 
 private:
   unsigned int id_;

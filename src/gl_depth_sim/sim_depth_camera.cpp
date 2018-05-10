@@ -3,10 +3,7 @@
 // OpenGL context
 #include "GLFW/glfw3.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <iostream>
-#include <glm/gtx/io.hpp>
 
 const static std::string vertex_shader_source =
     "#version 330 core\n"
@@ -26,6 +23,22 @@ const static std::string frag_shader_source =
       "FragColor = vec4(gl_FragCoord.x / 800.0f, gl_FragCoord.y / 600.0f, 1.0f, 1.0f);\n"
     "}\n";
 
+static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperties& camera)
+{
+  Eigen::Matrix4d m (Eigen::Matrix4d::Identity());
+
+  // Organized by column
+  m(0,0) = 2.0f * camera.fx / camera.width;
+  m(1,1) = 2.0f * camera.fy/ camera.height;
+  m(0,2) = 1.0f - 2.0f * camera.cx / camera.width;
+  m(1,2) = 2.0f * camera.cy / camera.height - 1.0f;
+  m(2,2) = (camera.z_far + camera.z_near) / (camera.z_near - camera.z_far);
+  m(3,2) = -1.0f;
+  m(2,3) = 2.0f * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
+  m(3,3) = 0.0f;
+
+  return m;
+}
 
 gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraProperties& camera)
   : camera_{camera}
@@ -60,19 +73,7 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
   // Load Shaders
   depth_program_.reset(new ShaderProgram(vertex_shader_source, frag_shader_source));
 
-//  projection_ = glm::perspective(glm::radians(60.0f), float(camera.width) / float(camera.height), camera.z_near,
-//                                 camera.z_far);
-  projection_ = glm::mat4(1.0f);
-
-  projection_[0][0] = 2.0 * camera.fx / camera.width;
-  projection_[1][1] = 2.0 * camera.fy/ camera.height;
-  projection_[2][0] = 1.0 - 2.0 * camera.cx / camera.width;
-  projection_[2][1] = 2.0 * camera.cy / camera.height - 1.0;
-  projection_[2][2] = (camera.z_far + camera.z_near) / (camera.z_near - camera.z_far);
-  projection_[2][3] = -1.0f;
-
-  projection_[3][2] = 2 * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
-  projection_[3][3] = 0.0f;
+  proj_ = createProjectionMatrix(camera);
 
   // CREATE A FRAME BUFFER OBJECT FOR COLOR & DEPTH
   // Create frame buffer and make it active
@@ -128,27 +129,10 @@ static float linearDepth(float depthSample, const float zNear, const float zFar)
   return zLinear;
 }
 
-static glm::mat4 toGLM(const Eigen::Affine3d& pose)
-{
-  glm::mat4 m;
-  for (int j = 0; j < 4; ++j)
-  {
-    for (int i = 0; i < 4; ++i)
-    {
-      // mat4 is (col, row)
-      m[i][j] = pose(j, i);
-    }
-  }
-  return m;
-}
-
 gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affine3d& pose)
 {
-
   // To OpenGL
   Eigen::Affine3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
-
-  auto view = toGLM(view_gl);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_DEPTH_TEST);
@@ -163,9 +147,8 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
     glBindVertexArray(obj.mesh->vao());
 
     // compute mvp
-    glm::mat4 model = toGLM(obj.pose);
-    glm::mat4 mvp = projection_ * view * model;
-    depth_program_->setUniformMat4("mvp", mvp);
+    Eigen::Projective3d mvp = proj_ * view_gl * obj.pose;
+    depth_program_->setUniformMat4("mvp", mvp.matrix().cast<float>());
 
     glDrawElements(GL_TRIANGLES, obj.mesh->numIndices(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0); // no need to unbind it every time
@@ -176,9 +159,9 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   img.cols = camera_.width;
   img.rows = camera_.height;
   img.data.resize(img.cols * img.rows);
-
   glReadPixels(0, 0, camera_.width, camera_.height, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
 
+  // Transform the depth data from clip space 1/w back to linear depth
   for (auto& depth : img.data)
   {
     depth = linearDepth(depth, camera_.z_near, camera_.z_far);
