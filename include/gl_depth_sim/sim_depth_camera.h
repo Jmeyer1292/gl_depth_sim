@@ -29,10 +29,13 @@ public:
   bool add(const Mesh& mesh, const Eigen::Affine3d& pose);
 
 private:
+  void initGLFW();
+  void createGLFramebuffer();
+
   // State information
   CameraProperties camera_;
-  std::vector<RenderableObjectState> objects_;
   Eigen::Matrix4d proj_;
+  std::vector<RenderableObjectState> objects_;
 
   // OpenGL context info
   GLFWwindow* window_;

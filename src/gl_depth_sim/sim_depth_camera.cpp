@@ -42,76 +42,17 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
 
 gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraProperties& camera)
   : camera_{camera}
+  , proj_{createProjectionMatrix(camera)}
 {
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // Load GLFW and OpenGL libraries; create window; create extensions
+  initGLFW();
 
-  window_ = glfwCreateWindow(camera.width, camera.height, "gl_depth_sim", NULL, NULL);
-  if (window_ == NULL)
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to create GLFW window");
-  }
+  // Creates an alternate frame buffer for offscreen rendering
+  // TODO: Currently un-used
+  createGLFramebuffer();
 
-  glfwMakeContextCurrent(window_);
-
-  // glad: load all OpenGL function pointers
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to initialize GLAD");
-  }
-
-  std::cout << "GL_VERSION: " << GLVersion.major << "." << GLVersion.minor << "\n";
-
-  if (GLAD_GL_ARB_clip_control) { std::cout << "Clip control supported\n"; }
-  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-
-
-  // Load Shaders
+  // Now that opengl is ready, we can load shaders
   depth_program_.reset(new ShaderProgram(vertex_shader_source, frag_shader_source));
-
-  proj_ = createProjectionMatrix(camera);
-
-  // CREATE A FRAME BUFFER OBJECT FOR COLOR & DEPTH
-  // Create frame buffer and make it active
-  glGenFramebuffers(1, &fbo_);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-
-  GLuint texColor;
-  glGenTextures(1, &texColor);
-
-  GLuint texDepth;
-  glGenTextures(1, &texDepth);
-
-  // Create color texture
-  glBindTexture(GL_TEXTURE_2D, texColor);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, camera.width, camera.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  // Attach the color to the active fbo
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColor, 0);
-
-  // Create a depth texture
-  glBindTexture(GL_TEXTURE_2D, texDepth);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, camera.width, camera.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
-
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    throw std::runtime_error("Framebuffer configuration failed");
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  glfwSwapInterval(0);
 }
 
 gl_depth_sim::SimDepthCamera::~SimDepthCamera()
@@ -183,4 +124,76 @@ bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Affine3d& 
   objects_.push_back(std::move(state));
 
   return true;
+}
+
+void gl_depth_sim::SimDepthCamera::initGLFW()
+{
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+  window_ = glfwCreateWindow(camera_.width, camera_.height, "gl_depth_sim", NULL, NULL);
+  if (window_ == NULL)
+  {
+    glfwTerminate();
+    throw std::runtime_error("Failed to create GLFW window");
+  }
+
+  glfwMakeContextCurrent(window_);
+
+  // glad: load all OpenGL function pointers
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+  {
+    glfwTerminate();
+    throw std::runtime_error("Failed to initialize GLAD");
+  }
+
+  std::cout << "GL_VERSION: " << GLVersion.major << "." << GLVersion.minor << "\n";
+
+  // Enable clipping [0, 1]
+  if (GLAD_GL_ARB_clip_control) { std::cout << "Clip control supported\n"; }
+  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
+  // Disable V-sync if we can
+  glfwSwapInterval(0);
+}
+
+void gl_depth_sim::SimDepthCamera::createGLFramebuffer()
+{
+  // CREATE A FRAME BUFFER OBJECT FOR COLOR & DEPTH
+  // Create frame buffer and make it active
+  glGenFramebuffers(1, &fbo_);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+  GLuint texColor;
+  glGenTextures(1, &texColor);
+
+  GLuint texDepth;
+  glGenTextures(1, &texDepth);
+
+  // Create color texture
+  glBindTexture(GL_TEXTURE_2D, texColor);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, camera_.width, camera_.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Attach the color to the active fbo
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColor, 0);
+
+  // Create a depth texture
+  glBindTexture(GL_TEXTURE_2D, texDepth);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, camera_.width, camera_.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
+
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    throw std::runtime_error("Framebuffer configuration failed");
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
