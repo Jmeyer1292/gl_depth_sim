@@ -91,12 +91,12 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   // To OpenGL
   Eigen::Affine3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_GREATER);
-  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+//  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glClearDepth(0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(depth_program_->id());
 
@@ -190,15 +190,15 @@ void gl_depth_sim::SimDepthCamera::createGLFramebuffer()
   GLuint texDepth;
   glGenTextures(1, &texDepth);
 
-  // Create color texture
-  glBindTexture(GL_TEXTURE_2D, texColor);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, camera_.width, camera_.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
+//  // Create color texture
+//  glBindTexture(GL_TEXTURE_2D, texColor);
+//  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, camera_.width, camera_.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//  glBindTexture(GL_TEXTURE_2D, 0);
 
-  // Attach the color to the active fbo
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColor, 0);
+//  // Attach the color to the active fbo
+//  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColor, 0);
 
   // Create a depth texture
   glBindTexture(GL_TEXTURE_2D, texDepth);
