@@ -32,10 +32,13 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
   m(1,1) = 2.0 * camera.fy/ camera.height;
   m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
   m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
-  m(2,2) = (camera.z_far + camera.z_near) / (camera.z_near - camera.z_far);
+//  m(2,2) = (camera.z_far + camera.z_near) / (camera.z_near - camera.z_far);
   m(3,2) = -1.0;
-  m(2,3) = 2.0 * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
+//  m(2,3) = 2.0 * camera.z_far * camera.z_near / (camera.z_near- camera.z_far);
   m(3,3) = 0.0;
+
+  m(2,2) = camera.z_near / (camera.z_far - camera.z_near);
+  m(2,3) = camera.z_far * camera.z_near / (camera.z_far - camera.z_near);
 
   return m;
 }
@@ -69,6 +72,20 @@ static float linearDepth(float depthSample, const float zNear, const float zFar)
   return zLinear;
 }
 
+static float reverseDepth(float depthSample, const float z_near, const float z_far)
+{
+  if (depthSample == 0.0f) return 0.0f;
+  const float A = z_near / (z_far - z_near);
+  const float B = z_far * z_near / (z_far - z_near);
+  return B / (depthSample + A);
+}
+
+static float reverseDepth2(float b, const float zn, const float zf)
+{
+  if (b == 0.0f) return 0.0f;
+  return (zf * zn) / (b * (zf - zn) + zn);
+}
+
 gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affine3d& pose)
 {
   // To OpenGL
@@ -76,7 +93,9 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_GREATER);
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  glClearDepth(0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(depth_program_->id());
@@ -104,7 +123,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   // Transform the depth data from clip space 1/w back to linear depth
   for (auto& depth : img.data)
   {
-    depth = linearDepth(depth, camera_.z_near, camera_.z_far);
+    depth = reverseDepth2(depth, camera_.z_near, camera_.z_far);
   }
 
   glfwSwapBuffers(window_);
@@ -152,7 +171,7 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
   // Enable clipping [0, 1]
   if (GLAD_GL_ARB_clip_control) { std::cout << "Clip control supported\n"; }
-//  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
   // Disable V-sync if we can
   glfwSwapInterval(0);
