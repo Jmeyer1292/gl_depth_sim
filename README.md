@@ -22,6 +22,13 @@ sudo apt install libglfw3-dev
 ![Stanford Dragon](docs/depth.gif)
 This scene shows the classic Stanford Dragon seen by a depth camera orbiting around the model. Rviz is used to display the clouds. This was taken directly from the ros example in the src/ directory. While the GIF is slow, the scan data is published at hundreds of frames per second.
 
+You can run this example in ROS by building this package in your workspace and running:
+```
+rosrun gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
+```
+
+You can also set the `_z` and `_radius` parameters.
+
 ## Usage
 To use in a ROS context,  add a catkin dependency on `gl_depth_sim` and follow the idea of the following example:
 ```c++
