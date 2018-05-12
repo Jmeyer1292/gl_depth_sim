@@ -25,6 +25,9 @@ struct DepthImage
   int rows, cols;
   std::vector<float> data;
 
+  DepthImage() = default;
+  DepthImage(int rows, int cols) : rows{rows}, cols{cols}, data(rows * cols) {}
+
   /**
    * @brief Returns the distance at a given row and column in the image given ROS coordinates! This means
    * y down the height of the screen. OpenGL stores data Y UP so here we have to flip the row input.

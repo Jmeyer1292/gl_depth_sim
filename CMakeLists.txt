@@ -22,7 +22,8 @@ find_package(OpenCV REQUIRED) # Used for interface extension
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS pcl_ros
+  DEPENDS ASSIMP OpenCV
 )
 
 include_directories(
@@ -99,7 +100,7 @@ target_link_libraries(${PROJECT_NAME}_ros_orbit
   ${catkin_LIBRARIES}
 )
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
