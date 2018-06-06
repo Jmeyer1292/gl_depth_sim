@@ -23,7 +23,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   CATKIN_DEPENDS pcl_ros
-  DEPENDS ASSIMP OpenCV
+  DEPENDS OpenCV
 )
 
 include_directories(
