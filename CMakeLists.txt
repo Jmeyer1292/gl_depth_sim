@@ -57,6 +57,7 @@ target_link_libraries(${PROJECT_NAME}
 add_library(${PROJECT_NAME}_interfaces
   src/interfaces/pcl_interface.cpp
   src/interfaces/opencv_interface.cpp
+  src/interfaces/noise_model.cpp
 )
 
 add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
