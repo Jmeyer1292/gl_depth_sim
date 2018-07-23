@@ -99,6 +99,8 @@ int main(int argc, char** argv)
 
     const auto depth_img = sim.render(pose);
 
+    depth_img= noise(depth_img);
+
     frame_counter++;
 
     if (frame_counter % 100 == 0)
