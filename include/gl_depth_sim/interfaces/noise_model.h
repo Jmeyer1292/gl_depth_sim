@@ -11,7 +11,7 @@
 
 namespace gl_depth_sim
 {
-std::vector noise(std::vector distance);
+std::vector<float> noise(std::vector<float> distance);
 
 }
 #endif // NOISE_MODEL_H
