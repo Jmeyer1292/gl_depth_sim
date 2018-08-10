@@ -22,22 +22,27 @@ static std::unique_ptr<gl_depth_sim::Mesh> process(const aiScene* scene)
 
     const int nface = mesh->mNumFaces;
     const int nvert = mesh->mNumVertices;
-  std::cout << "Mesh has n faces/verts: " << nface << "/" << nvert << "\n";
+    std::cout << "Mesh has n faces/verts: " << nface << "/" << nvert << "\n";
 
-  for (int i = 0; i < nvert; ++i)
-  {
-    const aiVector3D& v =  mesh->mVertices[i];
+    for (int i = 0; i < nvert; ++i)
+    {
+      const aiVector3D& v =  mesh->mVertices[i];
       vertices.push_back({v.x, v.y, v.z});
     }
 
+    int skippedFaces = 0;
     for (int i = 0; i < nface; ++i)
     {
       const aiFace& f = mesh->mFaces[i];
-    assert(f.mNumIndices == 3);
+
+      if( f.mNumIndices == 3 ){
         indices.push_back(f.mIndices[0]);
         indices.push_back(f.mIndices[1]);
         indices.push_back(f.mIndices[2]);
       }
+      else skippedFaces += 1;
+    }
+    if (skippedFaces >0) std::cout << "Warning: Skipped " << skippedFaces << " malformed faces. \n";
 
   }
   return std::unique_ptr<gl_depth_sim::Mesh>(new gl_depth_sim::Mesh(vertices, indices));
