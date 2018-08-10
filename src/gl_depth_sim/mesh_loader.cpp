@@ -15,7 +15,7 @@ static std::unique_ptr<gl_depth_sim::Mesh> process(const aiScene* scene)
   gl_depth_sim::EigenAlignedVec<Eigen::Vector3f> vertices;
   std::vector<unsigned> indices;
 
-
+  long index_offset = 0;
   for(int meshNum = 0 ; meshNum <num_meshes ; meshNum++)
   {
     const aiMesh* mesh = scene->mMeshes[meshNum];
@@ -35,15 +35,19 @@ static std::unique_ptr<gl_depth_sim::Mesh> process(const aiScene* scene)
     {
       const aiFace& f = mesh->mFaces[i];
 
-      if( f.mNumIndices == 3 ){
-        indices.push_back(f.mIndices[0]);
-        indices.push_back(f.mIndices[1]);
-        indices.push_back(f.mIndices[2]);
+      if(f.mNumIndices == 3)
+      {
+        indices.push_back(f.mIndices[0] + index_offset);
+        indices.push_back(f.mIndices[1] + index_offset);
+        indices.push_back(f.mIndices[2] + index_offset);
       }
       else skippedFaces += 1;
     }
-    if (skippedFaces >0) std::cout << "Warning: Skipped " << skippedFaces << " malformed faces. \n";
-
+    if(skippedFaces > 0)
+    {
+      std::cout << "Warning: Skipped " << skippedFaces << " malformed faces. \n";
+    }
+    index_offset += nvert;
   }
   return std::unique_ptr<gl_depth_sim::Mesh>(new gl_depth_sim::Mesh(vertices, indices));
 }
