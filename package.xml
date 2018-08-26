@@ -16,4 +16,7 @@
   <depend>tf_conversions</depend>
   <depend>pcl_ros</depend>
 
+  <!-- system dependency -->
+  <build_depend>libglfw3-dev</build_depend>
+
 </package>
