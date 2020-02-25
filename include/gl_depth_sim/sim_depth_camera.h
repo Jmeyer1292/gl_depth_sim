@@ -23,6 +23,7 @@ struct RenderableObjectState
 {
   std::unique_ptr<RenderableMesh> mesh;
   Eigen::Isometry3d pose;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /**
@@ -82,6 +83,9 @@ private:
   GLFWwindow* window_;
   std::unique_ptr<ShaderProgram> depth_program_;
   unsigned int fbo_;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }

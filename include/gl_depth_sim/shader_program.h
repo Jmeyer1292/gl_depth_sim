@@ -10,6 +10,8 @@ namespace gl_depth_sim
 class ShaderProgram
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   ShaderProgram(const std::string& vertex_shader, const std::string& frag_shader);
   ~ShaderProgram();
 

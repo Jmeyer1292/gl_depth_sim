@@ -1,72 +1,57 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(gl_depth_sim)
-
-add_compile_options(-std=c++14 -Wall -Wextra)
-
-find_package(catkin REQUIRED COMPONENTS
-  roscpp # Used for ROS examples
-  pcl_ros # Used for interfaces extension
-  tf2_ros # Used for ROS example
-  tf2_eigen # Used for ROS example
-  visualization_msgs # Used for ROS example
-)
+cmake_minimum_required(VERSION 3.5.0)
+project(gl_depth_sim VERSION 0.2.0 LANGUAGES C CXX)
 
 # Required for core functionality
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(PCL REQUIRED)
 
 # Extensions
 find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(OpenCV REQUIRED) # Used for interface extension
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
-  CATKIN_DEPENDS
-    roscpp
-    pcl_ros
-    tf2_ros
-    tf2_eigen
-    visualization_msgs
-  DEPENDS OpenCV
-)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-)
+add_library(glad SHARED src/${PROJECT_NAME}/glad.c)
+target_include_directories(glad PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
 
 # Primary rendering library
 # Independent of ROS, but does need glfw3 and assimp for model loading
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/sim_depth_camera.cpp
   src/${PROJECT_NAME}/mesh_loader.cpp
   src/${PROJECT_NAME}/mesh.cpp
   src/${PROJECT_NAME}/renderable_mesh.cpp
   src/${PROJECT_NAME}/shader_program.cpp
-  src/${PROJECT_NAME}/glad.c
-  src/${PROJECT_NAME}/glfw_guard.cpp
-)
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}
-  ${OPENGL_LIBRARIES}
+  src/${PROJECT_NAME}/glfw_guard.cpp)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_link_libraries(${PROJECT_NAME} PUBLIC
   ${ASSIMP_LIBRARIES}
+  OpenGL::OpenGL
+  glad
   dl
   glfw
-)
+  Eigen3::Eigen
+  )
 
 # Libaries for interfacing with opencv and pcl
-add_library(${PROJECT_NAME}_interfaces
+add_library(${PROJECT_NAME}_interfaces SHARED
   src/interfaces/pcl_interface.cpp
-  src/interfaces/opencv_interface.cpp
-)
-add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_interfaces
+  src/interfaces/opencv_interface.cpp)
+target_compile_options(${PROJECT_NAME}_interfaces PRIVATE -std=c++11)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_interfaces SYSTEM PUBLIC
+    ${PCL_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}_interfaces PUBLIC
   ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
 
 # Simulated laser scanner library
@@ -82,65 +67,63 @@ target_link_libraries(${PROJECT_NAME}_sim_laser_scanner
 
 # Example showing basic usage
 add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
+target_compile_options(${PROJECT_NAME}_test PRIVATE -std=c++11)
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
-target_link_libraries(${PROJECT_NAME}_test
+target_include_directories(${PROJECT_NAME}_test PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_link_libraries(${PROJECT_NAME}_test PUBLIC
   ${PROJECT_NAME}
-  ${PROJECT_NAME}_interfaces
-  ${catkin_LIBRARIES}
-)
+  ${PROJECT_NAME}_interfaces)
 
 # Example showing an orbiting camera
 add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
+target_compile_options(${PROJECT_NAME}_orbit PRIVATE -std=c++11)
 set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
-target_link_libraries(${PROJECT_NAME}_orbit
+target_include_directories(${PROJECT_NAME}_orbit PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_link_libraries(${PROJECT_NAME}_orbit PUBLIC
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces)
+
+#add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
+#set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
+#target_link_libraries(${PROJECT_NAME}_laser_example
+#  ${PROJECT_NAME}_sim_laser_scanner
+#  ${catkin_LIBRARIES}
+#)
+
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include)
+
+install(TARGETS
+  glad
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
-  ${catkin_LIBRARIES}
-)
+  ${PROJECT_NAME}_test
+  ${PROJECT_NAME}_orbit
+        EXPORT ${PROJECT_NAME}-targets
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+install(EXPORT ${PROJECT_NAME}-targets NAMESPACE gl_depth_sim:: DESTINATION lib/cmake/${PROJECT_NAME})
 
-# Example showing orbiting camera with point cloud publishing in ROS
-add_executable(${PROJECT_NAME}_ros_orbit src/camera_ros_example.cpp)
-set_target_properties(${PROJECT_NAME}_ros_orbit PROPERTIES OUTPUT_NAME ros_example PREFIX "")
-target_link_libraries(${PROJECT_NAME}_ros_orbit
-  ${PROJECT_NAME}
-  ${PROJECT_NAME}_interfaces
-  ${catkin_LIBRARIES}
-)
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
-# Example showing sweeping laser scan with point cloud publishing in ROS
-add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
-set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
-target_link_libraries(${PROJECT_NAME}_laser_example
-  ${PROJECT_NAME}_sim_laser_scanner
-  ${catkin_LIBRARIES}
-)
+# Create cmake config files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
-install(
-  TARGETS
-    ${PROJECT_NAME}
-    ${PROJECT_NAME}_interfaces
-    ${PROJECT_NAME}_sim_laser_scanner
-    ${PROJECT_NAME}_test
-    ${PROJECT_NAME}_orbit
-    ${PROJECT_NAME}_ros_orbit
-    ${PROJECT_NAME}_laser_example
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
 
-#############
-## Testing ##
-#############
-#if(CATKIN_ENABLE_TESTING)
-#  find_package(rostest REQUIRED)
-#  catkin_add_gtest(utest_node test/utest.cpp)
-#  target_link_libraries(utest_node
-#    ${catkin_LIBRARIES}
-#    ${PROJECT_NAME}_sim_laser_scanner
-#  )
-#endif()
+export(EXPORT ${PROJECT_NAME}-targets NAMESPACE gl_depth_sim:: FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
