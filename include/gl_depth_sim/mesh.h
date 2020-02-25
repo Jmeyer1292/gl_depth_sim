@@ -14,6 +14,8 @@ using EigenAlignedVec = std::vector<T, Eigen::aligned_allocator<T>>;
 class Mesh
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   Mesh(const EigenAlignedVec<Eigen::Vector3f>& vertices, const std::vector<unsigned>& indices);
 
   std::size_t numIndices() const { return indices_.size(); }
