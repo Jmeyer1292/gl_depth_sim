@@ -25,7 +25,8 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/renderable_mesh.cpp
   src/${PROJECT_NAME}/shader_program.cpp
   src/${PROJECT_NAME}/glfw_guard.cpp)
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++14)
+target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -42,7 +43,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 add_library(${PROJECT_NAME}_interfaces SHARED
   src/interfaces/pcl_interface.cpp
   src/interfaces/opencv_interface.cpp)
-target_compile_options(${PROJECT_NAME}_interfaces PRIVATE -std=c++11)
+target_compile_options(${PROJECT_NAME}_interfaces PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -67,7 +68,7 @@ target_link_libraries(${PROJECT_NAME}_sim_laser_scanner
 
 # Example showing basic usage
 add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
-target_compile_options(${PROJECT_NAME}_test PRIVATE -std=c++11)
+target_compile_options(${PROJECT_NAME}_test PRIVATE -std=c++14)
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
 target_include_directories(${PROJECT_NAME}_test PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -78,7 +79,7 @@ target_link_libraries(${PROJECT_NAME}_test PUBLIC
 
 # Example showing an orbiting camera
 add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
-target_compile_options(${PROJECT_NAME}_orbit PRIVATE -std=c++11)
+target_compile_options(${PROJECT_NAME}_orbit PRIVATE -std=c++14)
 set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
 target_include_directories(${PROJECT_NAME}_orbit PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
