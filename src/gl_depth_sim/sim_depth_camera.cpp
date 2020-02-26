@@ -44,8 +44,8 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
 }
 
 gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraProperties& camera)
-  : camera_{camera}
-  , proj_{createProjectionMatrix(camera)}
+  : camera_(camera)
+  , proj_(createProjectionMatrix(camera))
 {
   // Load GLFW and OpenGL libraries; create window; create extensions
   initGLFW();
