@@ -10,8 +10,6 @@ namespace gl_depth_sim
 class ShaderProgram
 {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   ShaderProgram(const std::string& vertex_shader, const std::string& frag_shader);
   ~ShaderProgram();
 
@@ -20,6 +18,8 @@ public:
   // Interaction with attributes
   void setInt(const std::string& attr, int val);
   void setUniformMat4(const std::string &attr, const Eigen::Matrix4f& mat);
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   unsigned int id_;
