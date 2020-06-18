@@ -17,21 +17,21 @@ jobs:
              OS_CODE_NAME: focal,
              ROS_DISTRO: noetic,
              ROS_REPO: main,
-             ADDITIONAL_DEBS: git, libassimp-dev,
+             ADDITIONAL_DEBS: git, libglfw3-dev,
              VERBOSE_TESTS: true}
           - {BADGE: bionic,
              OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
-             ADDITIONAL_DEBS: git, libassimp-dev,
+             ADDITIONAL_DEBS: git, libglfw3-dev,
              VERBOSE_TESTS: true}
           - {BADGE: xenial,
              OS_NAME: ubuntu,
              OS_CODE_NAME: xenial,
              ROS_DISTRO: kinetic,
              ROS_REPO: main,
-             ADDITIONAL_DEBS: git, libassimp-dev,
+             ADDITIONAL_DEBS: git, libglfw3-dev,
              VERBOSE_TESTS: true}
     runs-on: ubuntu-latest
     steps:
