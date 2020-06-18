@@ -12,9 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - {BADGE: noetic,
+          - {BADGE: focal,
              OS_NAME: ubuntu,
-             OS_CODE_NAME: fossa,
+             OS_CODE_NAME: focal,
              ROS_DISTRO: noetic,
              ROS_REPO: main,
              ADDITIONAL_DEBS: git,
