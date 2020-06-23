@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
   // Create the simulation
   gl_depth_sim::SimDepthCamera sim (props);
-  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
+  sim.add("mesh_identifier", *mesh_ptr, Eigen::Isometry3d::Identity());
 
 
   // State for FPS monitoring

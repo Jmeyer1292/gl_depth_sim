@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 // Foward declare GLFWWindow
 struct GLFWwindow;
@@ -21,7 +22,7 @@ namespace gl_depth_sim
 struct RenderableObjectState
 {
   std::unique_ptr<RenderableMesh> mesh;
-  Eigen::Affine3d pose;
+  Eigen::Isometry3d pose;
 };
 
 /**
@@ -56,7 +57,13 @@ public:
   /**
    * @brief Adds a triangle mesh to the scene with the given pose in world coordinates.
    */
+  bool add(const std::string mesh_id, const Mesh& mesh, const Eigen::Isometry3d& pose);
   bool add(const Mesh& mesh, const Eigen::Isometry3d& pose);
+
+  /**
+   * @brief Moves a triangle mesh within the scene given an identifier string and a pose in world coordinates.
+   */
+  bool move(const std::string mesh_id, const Eigen::Isometry3d& pose);
 
 private:
   void initGLFW();
@@ -69,7 +76,7 @@ private:
   // State information
   CameraProperties camera_;
   Eigen::Matrix4d proj_;
-  std::vector<RenderableObjectState> objects_;
+  std::map<std::string, RenderableObjectState> objects_;
 
   // OpenGL context info
   GLFWwindow* window_;

@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
+  sim.add("mesh_identifier", *mesh_ptr, Eigen::Isometry3d::Identity());
 
   std::cout << "Camera is looking down the positive x axis\n";
   std::cout << "Enter 'q' and press enter to quit\n";
