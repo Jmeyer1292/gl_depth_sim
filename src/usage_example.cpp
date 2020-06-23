@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  sim.add(*mesh_ptr, Eigen::Affine3d::Identity());
+  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
 
   std::cout << "Camera is looking down the positive x axis\n";
   std::cout << "Enter 'q' and press enter to quit\n";
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     std::istringstream iss (line);
     iss >> x >> y >> z;
 
-    Eigen::Affine3d pose; pose = Eigen::Translation3d(x,y,z);
+    Eigen::Isometry3d pose; pose = Eigen::Translation3d(x,y,z);
 
     Eigen::Matrix3d m;
     m << 0, 0,  1,

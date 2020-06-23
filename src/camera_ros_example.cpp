@@ -12,13 +12,13 @@
 
 #include <chrono>
 
-static Eigen::Affine3d lookat(const Eigen::Vector3d& origin, const Eigen::Vector3d& eye, const Eigen::Vector3d& up)
+static Eigen::Isometry3d lookat(const Eigen::Vector3d& origin, const Eigen::Vector3d& eye, const Eigen::Vector3d& up)
 {
   Eigen::Vector3d z = (eye - origin).normalized();
   Eigen::Vector3d x = z.cross(up).normalized();
   Eigen::Vector3d y = z.cross(x).normalized();
 
-  auto p = Eigen::Affine3d::Identity();
+  auto p = Eigen::Isometry3d::Identity();
   p.translation() = origin;
   p.matrix().col(0).head<3>() = x;
   p.matrix().col(1).head<3>() = y;
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
   // Create the simulation
   gl_depth_sim::SimDepthCamera sim (props);
-  sim.add(*mesh_ptr, Eigen::Affine3d::Identity());
+  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
 
 
   // State for FPS monitoring

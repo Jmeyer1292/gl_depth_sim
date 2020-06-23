@@ -57,11 +57,11 @@ int main(int argc, char** argv)
   std::unique_ptr<gl_depth_sim::Mesh> mesh_ptr = gl_depth_sim::loadMesh(argv[1]);
 
   // Adds mesh to the renderable scene at the origin
-  sim.add(*mesh_ptr, Eigen::Affine3d::Identity());
+  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
 
   // Define a camera location from which you want to "take a picture"
   // Uses ROS conventions for optical frames (+Z down the camera field of view, Y down the image)
-  Eigen::Affine3d camera_pose = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d camera_pose = Eigen::Isometry3d::Identity();
   camera_pose.translation() = Eigen::Vector3d(-1, 0, 0);
 
   // Render the image and download the depth data

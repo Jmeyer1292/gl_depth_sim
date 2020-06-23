@@ -51,12 +51,12 @@ public:
    * that this is different from OpenGL's frame of Y up, -Z down camera.
    * @return A data structure that contains a linearized depth data matrix. See @class DepthImage.
    */
-  DepthImage render(const Eigen::Affine3d& pose);
+  DepthImage render(const Eigen::Isometry3d& pose);
 
   /**
    * @brief Adds a triangle mesh to the scene with the given pose in world coordinates.
    */
-  bool add(const Mesh& mesh, const Eigen::Affine3d& pose);
+  bool add(const Mesh& mesh, const Eigen::Isometry3d& pose);
 
 private:
   void initGLFW();

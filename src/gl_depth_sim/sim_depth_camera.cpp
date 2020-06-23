@@ -64,10 +64,10 @@ gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 }
 
 
-gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affine3d& pose)
+gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isometry3d& pose)
 {
   // To OpenGL
-  Eigen::Affine3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
+  Eigen::Isometry3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
 
   glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
   glEnable(GL_DEPTH_TEST);
@@ -114,7 +114,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Affin
   return img;
 }
 
-bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Affine3d& pose)
+bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Isometry3d& pose)
 {
   std::unique_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
 
