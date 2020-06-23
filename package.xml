@@ -18,5 +18,6 @@
 
   <!-- system dependency -->
   <build_depend>libglfw3-dev</build_depend>
-
+  <depend>libassimp3v5</depend>
+  
 </package>
