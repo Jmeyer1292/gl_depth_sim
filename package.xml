@@ -18,5 +18,7 @@
 
   <!-- system dependency -->
   <build_depend>libglfw3-dev</build_depend>
-
+  <depend>assimp</depend>
+  <depend>libopencv-dev</depend>
+  
 </package>
