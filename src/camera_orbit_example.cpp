@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
   // Create the simulation
   gl_depth_sim::SimDepthCamera sim (props);
-  sim.add(*mesh_ptr, Eigen::Isometry3d::Identity());
+  sim.add("mesh_identifier", *mesh_ptr, Eigen::Isometry3d::Identity());
 
   // Spawn a thread to listen for the user to interact with the scene
   std::atomic<bool> thread_done (false);

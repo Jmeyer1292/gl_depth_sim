@@ -80,13 +80,13 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   // Render each object
   for (const auto& obj : objects_)
   {
-    glBindVertexArray(obj.mesh->vao());
+    glBindVertexArray(obj.second.mesh->vao());
 
     // compute mvp
-    Eigen::Projective3d mvp = proj_ * view_gl * obj.pose;
+    Eigen::Projective3d mvp = proj_ * view_gl * obj.second.pose;
     depth_program_->setUniformMat4("mvp", mvp.matrix().cast<float>());
 
-    glDrawElements(GL_TRIANGLES, obj.mesh->numIndices(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, obj.second.mesh->numIndices(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0); // no need to unbind it every time
   }
 
@@ -114,7 +114,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   return img;
 }
 
-bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Isometry3d& pose)
+bool gl_depth_sim::SimDepthCamera::add(const std::string mesh_id, const Mesh& mesh, const Eigen::Isometry3d& pose)
 {
   std::unique_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
 
@@ -122,13 +122,34 @@ bool gl_depth_sim::SimDepthCamera::add(const Mesh& mesh, const Eigen::Isometry3d
   state.mesh = std::move(renderable_mesh);
   state.pose = pose;
 
-  objects_.push_back(std::move(state));
+  objects_[mesh_id] = std::move(state);
   return true;
 }
 
+bool gl_depth_sim::SimDepthCamera::add( const Mesh& mesh, const Eigen::Isometry3d& pose)
+{
+  const std::string mesh_id = "mesh" + std::to_string(rand()%1000);
+  std::unique_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
+
+  RenderableObjectState state;
+  state.mesh = std::move(renderable_mesh);
+  state.pose = pose;
+
+  objects_[mesh_id] = std::move(state);
+  return true;
+}
+
+bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::Isometry3d &pose)
+{
+  objects_[mesh_id].pose = pose;
+  return true;
+}
+
+
+
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
-//  glfwInit() is called by the glfw_guard object
+  //  glfwInit() is called by the glfw_guard object
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
