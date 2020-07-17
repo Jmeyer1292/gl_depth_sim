@@ -100,6 +100,15 @@ target_link_libraries(${PROJECT_NAME}_ros_orbit
   ${catkin_LIBRARIES}
 )
 
+add_executable(laser_node src/laser_node.cpp)
+target_link_libraries(laser_node
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+  ${catkin_LIBRARIES}
+)
+
+
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
