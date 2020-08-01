@@ -2,14 +2,14 @@
 
 
 <node name="laser_node" pkg="gl_depth_sim" type="laser_node" output="screen">
-  <param name="height" value="5" />
-  <param name="width" value="2095" />
-  <param name="cx" value="1047" />
-  <param name="cy" value="0" />
-  <param name="z_near" value="0.1" />
-  <param name="z_far" value="30.0" />
-  <param name="fx" value="604.77" />
-  <param name="fy" value="604.77" />
+  <param name="/height" value="5" />
+  <param name="/width" value="2095" />
+  <param name="/cx" value="1047" />
+  <param name="/cy" value="0" />
+  <param name="/z_near" value="0.1" />
+  <param name="/z_far" value="30.0" />
+  <param name="/fx" value="604.77" />
+  <param name="/fy" value="604.77" />
 </node>
 
 <node name="rviz" pkg="rviz" type="rviz" output="screen" />

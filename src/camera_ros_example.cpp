@@ -38,11 +38,12 @@ int main(int argc, char** argv)
 
   // Load ROS parameters
   std::string mesh_path;
-  if (!pnh.getParam("mesh", mesh_path))
-  {
-    ROS_ERROR_STREAM("User must set the 'mesh' private parameter");
-    return 1;
-  }
+//  if (!pnh.getParam("mesh", mesh_path))
+//  {
+//    ROS_ERROR_STREAM("User must set the 'mesh' private parameter");
+//    return 1;
+//  }
+  nh.getParam("/ros_example/mesh", mesh_path);
 
   std::string base_frame = pnh.param<std::string>("base_frame", "world");
   std::string camera_frame = pnh.param<std::string>("camera_frame", "camera");
