@@ -10,6 +10,10 @@
 #include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
 
+#include <opencv2/highgui/highgui.hpp>
+#include "gl_depth_sim/interfaces/opencv_interface.h"
+#include <pcl/io/pcd_io.h>
+
 #include <chrono>
 
 static Eigen::Isometry3d lookat(const Eigen::Vector3d& origin, const Eigen::Vector3d& eye, const Eigen::Vector3d& up)
@@ -38,11 +42,11 @@ int main(int argc, char** argv)
 
   // Load ROS parameters
   std::string mesh_path;
-//  if (!pnh.getParam("mesh", mesh_path))
-//  {
-//    ROS_ERROR_STREAM("User must set the 'mesh' private parameter");
-//    return 1;
-//  }
+  if (!pnh.getParam("mesh", mesh_path))
+  {
+    ROS_ERROR_STREAM("User must set the 'mesh' private parameter");
+    return 1;
+  }
   nh.getParam("/ros_example/mesh", mesh_path);
 
   std::string base_frame = pnh.param<std::string>("base_frame", "world");
@@ -117,6 +121,10 @@ int main(int argc, char** argv)
     tf::transformEigenToTF(pose, transform);
     tf::StampedTransform stamped_transform (transform, ros::Time::now(), base_frame, camera_frame);
     broadcaster.sendTransform(stamped_transform);
+
+    cv::Mat img;
+    gl_depth_sim::toCvImage16u(depth_img, img);
+    cv::imwrite("img.png", img);
 
     ros::spinOnce();
   }
