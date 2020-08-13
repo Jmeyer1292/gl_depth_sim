@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<robot name="myfirst">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://gl_depth_sim/meshes/cylinder.stl"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
