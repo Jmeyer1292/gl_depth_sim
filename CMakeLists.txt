@@ -108,6 +108,14 @@ target_link_libraries(laser_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(cloud_sub_node src/cloud_sub_node.cpp)
+target_link_libraries(cloud_sub_node
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+  ${catkin_LIBRARIES}
+)
+
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -119,3 +127,17 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+
+#############
+## Testing ##
+#############
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(utest_node test/utest_launch.test src/test/utest.cpp)
+  target_link_libraries(utest_node
+      ${catkin_LIBRARIES}
+      ${PROJECT_NAME}
+      ${PROJECT_NAME}_interfaces
+      ${catkin_LIBRARIES}
+)
+endif()

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot name="cube">
+
+  <link name="world" />
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://gl_depth_sim/meshes/cube_1-5.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+  <link name="camera" />
+  <joint name="world_to_camera" type="fixed">
+    <parent link="world"/>
+    <child link="camera"/>
+  </joint>
+
+</robot>

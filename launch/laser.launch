@@ -1,29 +1,35 @@
 <launch>
 
+<arg name="rvizconfig" default="$(find gl_depth_sim)/config/rviz.rviz" />
+<arg name="model" default="$(find gl_depth_sim)/urdf/cylinder.urdf"/>
+
+<!--node name="cloud_sub_node" pkg="gl_depth_sim" type="cloud_sub_node" output="screen" /-->
 
 <node name="laser_node" pkg="gl_depth_sim" type="laser_node" output="screen">
-  <param name="/path" value="/home/cwolfe/a5_ws/src/gl_depth_sim/meshes/cylinder.stl" />
-  <!--param name="/width" value="2095" /-->
-  <!--param name="/height" value="5" /-->
-  <!--param name="/fx" value="604.77" /-->
-  <!--param name="/fy" value="604.77" /-->
-  <!--param name="/cx" value="1047" /-->
-  <!--param name="/cy" value="0" /-->
-  <!--param name="/z_near" value="0.1" /-->
-  <!--param name="/z_far" value="30.0" /-->
+    <param name="/path" value="/home/cwolfe/Software/gl_ws/src/gl_depth_sim/meshes/cylinder_1.stl" />
 
-  <param name="/width" value="640" />
-  <param name="/height" value="480" />
-  <param name="/fx" value="550" />
-  <param name="/fy" value="550" />
-  <param name="/cx" value="320" />
-  <param name="/cy" value="240" />
-  <param name="/z_near" value="0.25" />
-  <param name="/z_far" value="10.0" />
+    <param name="/width" value="2095" />
+    <param name="/height" value="5" />
+    <param name="/fx" value="604.77" />
+    <param name="/fy" value="604.77" />
+    <param name="/cx" value="1047" />
+    <param name="/cy" value="0" />
+    <param name="/z_near" value="0.1" />
+    <param name="/z_far" value="30.0" />
+
+    <param name="/cam_x" value="0.0" />
+    <param name="/cam_y" value="0.0" />
+    <param name="/cam_z" value="0.0" />
 
 </node>
 
-<node name="rviz" pkg="rviz" type="rviz" output="screen" />
+
+<param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" output="screen" />
+
 
 </launch>
 

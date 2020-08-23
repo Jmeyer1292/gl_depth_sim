@@ -20,6 +20,8 @@
 #include "gl_depth_sim/interfaces/opencv_interface.h"
 #include <pcl/io/pcd_io.h>
 
+#include "gl_depth_sim/renderable_mesh.h"
+
 #include <chrono>
 
 #include <iostream>
@@ -45,22 +47,37 @@ static Eigen::Isometry3d lookat(const Eigen::Vector3d& origin,
 
 class SimLaserScanner {
     gl_depth_sim::SimDepthCamera camera_;
-    float z_near_, z_far_;
+    gl_depth_sim::CameraProperties properties_;
   public:
-    SimLaserScanner (gl_depth_sim::CameraProperties, float, float);
-    pcl::PointCloud<pcl::PointXYZ> render();
+    SimLaserScanner (gl_depth_sim::CameraProperties);
+    void render(pcl::PointCloud<pcl::PointXYZ>& cloud,
+                Eigen::Isometry3d& camera_pose);
+    void add(const gl_depth_sim::Mesh& mesh, const Eigen::Isometry3d& pose);
 
 };
 
 
-SimLaserScanner::SimLaserScanner (gl_depth_sim::CameraProperties props, float z_near, float z_far)
-    : camera_(props), z_near_(z_near), z_far_(z_far) {}
+SimLaserScanner::SimLaserScanner (gl_depth_sim::CameraProperties props)
+    : camera_(props), properties_(props) {
+
+}
+
+void SimLaserScanner::add(const gl_depth_sim::Mesh& mesh, const Eigen::Isometry3d& pose){
+  camera_.add(mesh, pose);
+}
 
 
-pcl::PointCloud<pcl::PointXYZ> SimLaserScanner::render(){
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-
-  return cloud;
+void SimLaserScanner::render(pcl::PointCloud<pcl::PointXYZ>& cloud,
+                             Eigen::Isometry3d&camera_pose){
+//  int num_rot = 3;
+//  for (int i=0; i<num_rot; i++){
+//    pcl::PointCloud<pcl::PointXYZ> new_cloud;
+    const auto depth_data = camera_.render(camera_pose);
+    gl_depth_sim::toPointCloudXYZ(properties_, depth_data, cloud);
+//    cloud += new_cloud;
+    pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+//    camera_pose.rotate(Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY()));
+//  }
 }
 
 
@@ -68,11 +85,10 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "laser_node");
   ros::NodeHandle nh;
-
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1, true);
+  ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1);
   tf::TransformBroadcaster broadcaster;
   std::string base_frame = "world";
   std::string camera_frame = "camera";
@@ -87,7 +103,6 @@ int main(int argc, char **argv)
   nh.getParam("/laser_node/cy", props.cy);
   nh.getParam("/laser_node/z_near", props.z_near);
   nh.getParam("/laser_node/z_far", props.z_far);
-
   gl_depth_sim::SimDepthCamera sim (props);
 
   std::string mesh_path;
@@ -100,23 +115,37 @@ int main(int argc, char **argv)
   pcl::PointCloud<pcl::PointXYZ> cloud;
   cloud.header.frame_id = camera_frame;
 
-  Eigen::Isometry3d camera_pose = Eigen::Isometry3d::Identity();
-//  Eigen::Vector3d camera_pos (0,0,0);
-//  auto camera_pose = lookat(camera_pos, Eigen::Vector3d(0,0,0), Eigen::Vector3d(0,0,1));
-//  auto camera_pose = lookat(camera_pos, Eigen::Vector3d(1,-1,0), Eigen::Vector3d(0,0,1));
+  double cam_x, cam_y, cam_z;
+  nh.getParam("/laser_node/cam_x", cam_x);
+  nh.getParam("/laser_node/cam_y", cam_y);
+  nh.getParam("/laser_node/cam_z", cam_z);
+  Eigen::Vector3d camera_pos (cam_x,cam_y,cam_z);
+  auto camera_pose = lookat(camera_pos, Eigen::Vector3d(1,0,0), Eigen::Vector3d(0,0,1));
+  SimLaserScanner laser(props);
+  laser.add(*mesh_ptr, mesh_pose);
+
   while (ros::ok())
   {
-    const auto depth_data = sim.render(camera_pose);
-    gl_depth_sim::toPointCloudXYZ(props, depth_data, cloud);
-    pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+//    const auto depth_data = sim.render(camera_pose);
+//    gl_depth_sim::toPointCloudXYZ(props, depth_data, cloud);
+//    pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+    laser.render(cloud, camera_pose);
     cloud_pub.publish(cloud);
     tf::Transform camera_transform;
     tf::transformEigenToTF(camera_pose, camera_transform);
     tf::StampedTransform camera_stamped_transform (camera_transform, ros::Time::now(), base_frame, camera_frame);
     broadcaster.sendTransform(camera_stamped_transform);
-    camera_pose.rotate(Eigen::AngleAxisd(2 * M_PI / 3, Eigen::Vector3d::UnitY()));
-    ros::Duration(1).sleep();
+    camera_pose.rotate(Eigen::AngleAxisd( M_PI / 2, Eigen::Vector3d::UnitY()));
+    for(int i=0;i<cloud.width; i++){
+      for(int j=0; j<cloud.height; j++){
+        pcl::PointXYZ point = cloud.at(i,j);
+        ROS_INFO_STREAM("x = " << point.x << " y = " << point.y << " z = " << point.z);
+        ROS_INFO_STREAM("Magnitude = " << pow(pow(point.x, 2) + pow(point.y, 2) + pow(point.z,2), 0.5));
+      }
+    }
+    ros::Duration(2.25).sleep();
   }
 
+  ros::waitForShutdown();
   return 0;
 }
