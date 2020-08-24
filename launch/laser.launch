@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="rviz_config" default="$(find gl_depth_sim)/launch/laser_example.rviz" />
-  <arg name="mesh_filename" default="$(find gl_depth_sim)/meshes/cylinder_1.stl"/>
+  <arg name="mesh_filename" default="$(find gl_depth_sim)/test/cylinder_r1.stl"/>
 
   <node name="laser_example" pkg="gl_depth_sim" type="laser_example" output="screen">
     <param name="mesh_filename" value="$(arg mesh_filename)"/>

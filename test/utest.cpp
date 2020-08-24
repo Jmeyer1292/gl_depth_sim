@@ -17,7 +17,7 @@ TEST(SimLaserScanner, InsideCylinderTest)
 
   // Load the test mesh
   std::string pkg_path = ros::package::getPath("gl_depth_sim");
-  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/meshes/cylinder_1.stl");
+  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/test/cylinder_r1.stl");
   ASSERT_NE(mesh_ptr, nullptr);
 
   // Add the mesh
