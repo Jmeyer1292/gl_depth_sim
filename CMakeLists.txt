@@ -133,7 +133,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  catkin_add_gtest(utest_node src/test/utest.cpp)
+  catkin_add_gtest(utest_node test/utest.cpp)
   target_link_libraries(utest_node
     ${catkin_LIBRARIES}
     ${PROJECT_NAME}_sim_laser_scanner
