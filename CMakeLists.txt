@@ -42,6 +42,7 @@ add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/shader_program.cpp
   src/${PROJECT_NAME}/glad.c
   src/${PROJECT_NAME}/glfw_guard.cpp
+  src/${PROJECT_NAME}/sim_laser_scanner.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -100,9 +101,9 @@ target_link_libraries(${PROJECT_NAME}_ros_orbit
   ${catkin_LIBRARIES}
 )
 
-add_executable(laser_node src/laser_node.cpp)
-target_link_libraries(laser_node
-  ${catkin_LIBRARIES}
+add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
+set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
+target_link_libraries(${PROJECT_NAME}_laser_example
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}

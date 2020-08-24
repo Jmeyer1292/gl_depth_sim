@@ -5,7 +5,7 @@
 
 <!--node name="cloud_sub_node" pkg="gl_depth_sim" type="cloud_sub_node" output="screen" /-->
 
-<node name="laser_node" pkg="gl_depth_sim" type="laser_node" output="screen">
+<node name="laser_example" pkg="gl_depth_sim" type="laser_example" output="screen">
     <param name="/path" value="/home/cwolfe/gl_ws/src/gl_depth_sim/meshes/cylinder_1.stl" />
 
     <param name="/z_near" value="0.1" />
