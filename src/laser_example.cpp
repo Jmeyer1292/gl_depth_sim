@@ -69,8 +69,9 @@ int main(int argc, char **argv)
 
   ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1);
   tf2_ros::TransformBroadcaster broadcaster;
-  std::string base_frame = "world";
-  std::string camera_frame = "camera";
+  std::string base_frame, camera_frame;
+  pnh.param<std::string>("base_frame", base_frame, "world");
+  pnh.param<std::string>("camera_frame", camera_frame, "camera");
 
   std::string mesh_filename;
   if (!get(pnh, "mesh_filename", mesh_filename))
