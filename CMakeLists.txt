@@ -6,8 +6,8 @@ add_compile_options(-std=c++14 -Wall -Wextra)
 find_package(catkin REQUIRED COMPONENTS
   roscpp # Used for ROS examples
   pcl_ros # Used for interfaces extension
-  tf # Used for ROS example
-  tf_conversions # Used for ROS example
+  tf2_ros # Used for ROS example
+  tf2_eigen # Used for ROS example
   visualization_msgs # Used for ROS example
 )
 
