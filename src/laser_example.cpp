@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
   // Sweep the laser scanner back and forth across the surface of a part in the world y-axis direction
   //
-  const double sweep_distance = 0.8;
+  const double sweep_distance = 1.0;
   Eigen::Isometry3d nominal_scanner_pose = Eigen::Isometry3d::Identity();
   nominal_scanner_pose.translate(Eigen::Vector3d(0.0, 0.0, 2.0));
   nominal_scanner_pose.rotate(Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX()));

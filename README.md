@@ -1,6 +1,6 @@
 # GL Depth Simulator
-This library simulates an organized depth camera by reading back a depth buffer after calling OpenGL to render a scene.
-I tried to write this package so that the core library had only a couple of dependencies and could stand on its own. The primary use case, however, is simulating depth data WITH hardware acceleration and WITHOUT needing to use Gazebo for ROS robotics development.
+This library simulates an organized depth camera and laser scanner by reading back a depth buffer after calling OpenGL to render a scene.
+I tried to write this package so that the core library had only a couple of dependencies and could stand on its own. The primary use case, however, is simulating depth data and laser scan data WITH hardware acceleration and WITHOUT needing to use Gazebo for ROS robotics development.
 
 ## Installation
 ### Dependencies
@@ -18,7 +18,7 @@ If you have ROS, you have everything but GLFW already. To get running:
 ```
 sudo apt install libglfw3-dev
 ```
-## Example
+## Depth Camera Example
 ![Stanford Dragon](docs/depth.gif)
 This scene shows the classic Stanford Dragon seen by a depth camera orbiting around the model. Rviz is used to display the clouds. This was taken directly from the ros example in the src/ directory. While the GIF is slow, the scan data is published at hundreds of frames per second.
 
@@ -28,6 +28,25 @@ rosrun gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
 ```
 
 You can also set the `_z` and `_radius` parameters.
+
+## Laser Scanner Example
+![Stanford Dragon](docs/laser.mp4)
+This library allows modeling a laser scanner and outputting scan data including a pointcloud of the scanner data
+and the distances to points in the pointcloud. The SimLaserScanner class takes three input parameters all stored
+in the LaserScannerProperties struct. These are the clipping distances (near and far) and the angular resolution.
+The field of view is fixed at 120 degrees, meaning three rotations are required for a 360 degree scan. The height
+is also fixed at 3 rather than 1 to prevent runtime errors. Only the middle row is used for analysis, like a
+real laser scanner which is one-dimensional. All the other properties of the a laser scanner can be derived from
+these values. This library includes the SimLaserScanner class, as well as an example node which demonstrates its
+use on the Stanford Dragon.
+
+The example node shows the Stanford Dragon seen by a laser scanner looking down at the dragon and scanning the
+pointcloud. Rviz is used to display the clouds. This was taken directly from the ros example in the src/ directory.
+
+You can run this example in ROS by building this package in your workspace and running:
+```
+rosrun gl_depth_sim laser_example.launch
+```
 
 ## Usage
 To use in a ROS context,  add a catkin dependency on `gl_depth_sim` and follow the idea of the following example:

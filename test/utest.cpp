@@ -17,7 +17,7 @@ TEST(SimLaserScanner, InsideCylinderTest)
 
   // Load the test mesh
   std::string pkg_path = ros::package::getPath("gl_depth_sim");
-  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/test/cylinder_r1.stl");
+  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/test/cylinder_5.stl");
   ASSERT_NE(mesh_ptr, nullptr);
 
   // Add the mesh
@@ -45,7 +45,7 @@ TEST(SimLaserScanner, InsideCylinderTest)
   float radius_stdev = std::sqrt(ba::variance(radius_acc));
   std::cout << "Radius mean: " << radius_mean << "; Radius Std. Dev.: " << radius_stdev << std::endl;
 
-  EXPECT_NEAR(radius_mean, radius, 0.01);
+  EXPECT_NEAR(radius_mean, radius, 0.0001);
 
   // Expect the shape to be circular (x/y range equal to diameter) and planar (z-range equal to zero)
   Eigen::Vector4f min_pt, max_pt;
