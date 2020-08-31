@@ -30,7 +30,7 @@ rosrun gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
 You can also set the `_z` and `_radius` parameters.
 
 ## Laser Scanner Example
-![Stanford Dragon](docs/laser.mp4)
+![Stanford Dragon](docs/laser.gif)
 This library allows modeling a laser scanner and outputting scan data including a pointcloud of the scanner data
 and the distances to points in the pointcloud. The SimLaserScanner class takes three input parameters all stored
 in the LaserScannerProperties struct. These are the clipping distances (near and far) and the angular resolution.
