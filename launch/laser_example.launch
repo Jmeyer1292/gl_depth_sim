@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="rviz_config" default="$(find gl_depth_sim)/launch/laser_example.rviz" />
+  <arg name="mesh_filename" default="$(find gl_depth_sim)/test/stanford_dragon.stl"/>
+
+  <node name="laser_example" pkg="gl_depth_sim" type="laser_example" output="screen">
+    <param name="mesh_filename" value="$(arg mesh_filename)"/>
+    <param name="min_range" value="0.1" />
+    <param name="max_range" value="30.0" />
+    <param name="angular_resolution" value="0.001" />
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" output="screen" />
+</launch>

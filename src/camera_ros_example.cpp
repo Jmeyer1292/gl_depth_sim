@@ -6,9 +6,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
 
-#include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
-#include <tf_conversions/tf_eigen.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 #include <opencv2/highgui/highgui.hpp>
 #include "gl_depth_sim/interfaces/opencv_interface.h"
@@ -38,7 +37,7 @@ int main(int argc, char** argv)
   // Setup ROS interfaces
   ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1, true);
 
-  tf::TransformBroadcaster broadcaster;
+  tf2_ros::TransformBroadcaster broadcaster;
 
   // Load ROS parameters
   std::string mesh_path;
@@ -117,10 +116,11 @@ int main(int argc, char** argv)
     cloud_pub.publish(cloud);
 
     // Step 2: Publish the TF so we can see it in RViz
-    tf::Transform transform;
-    tf::transformEigenToTF(pose, transform);
-    tf::StampedTransform stamped_transform (transform, ros::Time::now(), base_frame, camera_frame);
-    broadcaster.sendTransform(stamped_transform);
+    geometry_msgs::TransformStamped transform;
+    transform.header.frame_id = base_frame;
+    transform.header.stamp = ros::Time::now();
+    transform.child_frame_id = camera_frame;
+    broadcaster.sendTransform(transform);
 
     cv::Mat img;
     gl_depth_sim::toCvImage16u(depth_img, img);

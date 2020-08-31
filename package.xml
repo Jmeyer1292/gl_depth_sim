@@ -12,13 +12,14 @@
   <depend>roscpp</depend>
 
   <!--Used for examples and interfacing-->
-  <depend>tf</depend>
-  <depend>tf_conversions</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_eigen</depend>
   <depend>pcl_ros</depend>
+  <depend>visualization_msgs</depend>
 
   <!-- system dependency -->
   <build_depend>libglfw3-dev</build_depend>
   <depend>assimp</depend>
   <depend>libopencv-dev</depend>
-  
+
 </package>
