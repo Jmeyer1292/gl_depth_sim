@@ -17,7 +17,7 @@ TEST(SimLaserScanner, InsideCylinderTest)
 
   // Load the test mesh
   std::string pkg_path = ros::package::getPath("gl_depth_sim");
-  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/test/cylinder_5.stl");
+  std::unique_ptr<Mesh> mesh_ptr = loadMesh(pkg_path + "/test/cylinder_r1.stl");
   ASSERT_NE(mesh_ptr, nullptr);
 
   // Add the mesh
@@ -54,33 +54,6 @@ TEST(SimLaserScanner, InsideCylinderTest)
   EXPECT_NEAR(max_pt.y() - min_pt.y(), 2.0 * radius, 0.01);
   EXPECT_NEAR(max_pt.z() - min_pt.z(), 0.0, 0.01);
 
-  // Expect the angular resolution to be close to the specified value
-  ba::accumulator_set<float, ba::stats<ba::tag::mean, ba::tag::variance>> res_acc;
-  for (std::size_t row = 0; row < scan.height; ++row)
-  {
-    for (std::size_t col = 0; col < scan.width - 1; ++col)
-    {
-      std::size_t i = row * scan.width + col;
-
-      const pcl::PointXYZ &pt_1 = scan.points.at(i);
-      Eigen::Vector3f v1(pt_1.x, pt_1.y, pt_1.z);
-
-      const pcl::PointXYZ &pt_2 = scan.points.at(i + 1);
-      Eigen::Vector3f v2(pt_2.x, pt_2.y, pt_2.z);
-
-      // Accumulate the dot product of the vectors (i.e. the cosine of the angle in between them)
-      float angular_diff = std::acos(v1.normalized().dot(v2.normalized()));
-
-      if (!std::isnan(angular_diff))
-        res_acc(angular_diff);
-    }
-  }
-  float res_mean = ba::mean(res_acc);
-  float res_stdev = std::sqrt(ba::variance(res_acc));
-  std::cout << "Resolution mean: " << res_mean << "; Resolution Std. Dev.: " << res_stdev << std::endl;
-
-  // Expect the angular difference in these adjacent vectors to be within 10% of the define resolution
-  EXPECT_NEAR(res_mean, properties.angular_resolution, 0.1 * properties.angular_resolution);
 }
 
 int main(int argc, char **argv)
