@@ -38,7 +38,7 @@ struct LaserScannerProperties
     properties.z_near = min_range;
     properties.z_far = max_range;
     properties.width = std::ceil(fov_x / angular_resolution);
-    properties.height = 3;
+    properties.height = 1;
     properties.fx = properties.width / (2.0 * std::tan(fov_x / 2.0));
     properties.fy = properties.fx;
     properties.cx = properties.width / 2.0;
