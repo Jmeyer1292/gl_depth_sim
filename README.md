@@ -31,20 +31,13 @@ You can also set the `_z` and `_radius` parameters.
 
 ## Laser Scanner Example
 ![Stanford Dragon](docs/laser.gif)
-This library allows modeling of a laser scanner and outputting scan data, including a pointcloud of the scanner
-data and the distances to points in the pointcloud. The SimLaserScanner class takes three input parameters all
-stored in the LaserScannerProperties struct. These are the clipping distances (near and far) and the angular
-resolution. The field of view is fixed at 120 degrees, meaning three rotations are required for a 360 degree
-scan. The height is fixed at 1 to represent a real laser which is one-dimensional. All the other properties of
-the a laser scanner can be derived from these values. This library includes the SimLaserScanner class, as well
-as an example node which demonstrates its use on the Stanford Dragon.
-
-The example node shows the Stanford Dragon seen by a laser scanner looking down at the dragon and scanning the
-pointcloud. Rviz is used to display the clouds. This was taken directly from the ros example in the src/ directory.
+This scene shows a line-scan of the same Stanford Dragon produced by a laser scanner with 360 degree field-of-view travelling of the surface of the mesh.
+Under the hood, a GL depth camera renders the scene 3 times at 120 degree rotational offsets to produce a single line of points in the simulated laser scan with 360 degree field of view.
+Various properties of the laser scanner, such as minimum and maximum range and angular resolution, are configurable.
 
 You can run this example in ROS by building this package in your workspace and running:
 ```
-rosrun gl_depth_sim laser_example.launch
+roslaunch gl_depth_sim laser_example.launch
 ```
 
 ## Usage
