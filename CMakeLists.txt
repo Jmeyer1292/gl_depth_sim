@@ -23,7 +23,12 @@ find_package(OpenCV REQUIRED) # Used for interface extension
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
-  CATKIN_DEPENDS pcl_ros
+  CATKIN_DEPENDS
+    roscpp
+    pcl_ros
+    tf2_ros
+    tf2_eigen
+    visualization_msgs
   DEPENDS OpenCV
 )
 
@@ -131,11 +136,11 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 ## Testing ##
 #############
-if(CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  catkin_add_gtest(utest_node test/utest.cpp)
-  target_link_libraries(utest_node
-    ${catkin_LIBRARIES}
-    ${PROJECT_NAME}_sim_laser_scanner
-  )
-endif()
+#if(CATKIN_ENABLE_TESTING)
+#  find_package(rostest REQUIRED)
+#  catkin_add_gtest(utest_node test/utest.cpp)
+#  target_link_libraries(utest_node
+#    ${catkin_LIBRARIES}
+#    ${PROJECT_NAME}_sim_laser_scanner
+#  )
+#endif()
