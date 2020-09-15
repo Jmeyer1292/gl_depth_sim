@@ -59,9 +59,7 @@ target_link_libraries(${PROJECT_NAME}_interfaces PUBLIC
 add_library(${PROJECT_NAME}_sim_laser_scanner
   src/${PROJECT_NAME}/sim_laser_scanner.cpp
 )
-add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_sim_laser_scanner
-  ${catkin_LIBRARIES}
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
 )
@@ -71,7 +69,7 @@ add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
 target_compile_options(${PROJECT_NAME}_test PRIVATE -std=c++14)
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
 target_include_directories(${PROJECT_NAME}_test PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCEDIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME}_test PUBLIC
   ${PROJECT_NAME}
@@ -87,13 +85,6 @@ target_include_directories(${PROJECT_NAME}_orbit PUBLIC
 target_link_libraries(${PROJECT_NAME}_orbit PUBLIC
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces)
-
-#add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
-#set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
-#target_link_libraries(${PROJECT_NAME}_laser_example
-#  ${PROJECT_NAME}_sim_laser_scanner
-#  ${catkin_LIBRARIES}
-#)
 
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include)
