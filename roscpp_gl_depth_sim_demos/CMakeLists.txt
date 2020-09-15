@@ -6,6 +6,8 @@ if (NOT $ENV{ROS_VERSION} EQUAL "1")
   return()
 endif()
 
+find_package(gl_depth_sim REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf2_ros
@@ -22,20 +24,18 @@ catkin_package(
   DEPENDS gl_depth_sim
 )
 
-find_package(gl_depth_sim REQUIRED)
-
 add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
 set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
 target_link_libraries(${PROJECT_NAME}_laser_example
   ${catkin_LIBRARIES}
-  gl_depth_sim::gl_depth_sim_sim_laser_scanner
+  gl_depth_sim::gl_depth_sim_laser_scanner
 )
 
 add_executable(${PROJECT_NAME}_camera_example src/camera_example.cpp)
 set_target_properties(${PROJECT_NAME}_camera_example PROPERTIES OUTPUT_NAME camera_example PREFIX "")
 target_link_libraries(${PROJECT_NAME}_camera_example
   ${catkin_LIBRARIES}
-  gl_depth_sim::gl_depth_interfaces
+  gl_depth_sim::gl_depth_sim_interfaces
 )
 
 install(

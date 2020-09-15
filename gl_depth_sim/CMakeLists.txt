@@ -57,10 +57,14 @@ target_link_libraries(${PROJECT_NAME}_interfaces PUBLIC
 )
 
 # Simulated laser scanner library
-add_library(${PROJECT_NAME}_sim_laser_scanner
+add_library(${PROJECT_NAME}_laser_scanner
   src/${PROJECT_NAME}/sim_laser_scanner.cpp
 )
-target_link_libraries(${PROJECT_NAME}_sim_laser_scanner
+target_include_directories(${PROJECT_NAME} PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>"
+)
+target_link_libraries(${PROJECT_NAME}_laser_scanner
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
 )
@@ -94,6 +98,7 @@ install(TARGETS
   glad
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
+  ${PROJECT_NAME}_laser_scanner
   ${PROJECT_NAME}_test
   ${PROJECT_NAME}_orbit
         EXPORT ${PROJECT_NAME}-targets
