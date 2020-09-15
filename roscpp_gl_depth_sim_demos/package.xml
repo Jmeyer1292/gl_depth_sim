@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>gl_depth_sim</name>
+  <name>roscpp_gl_depth_sim_demos</name>
   <version>0.0.1</version>
   <description>The roscpp_gl_depth_sim_demos package</description>
 
