@@ -9,6 +9,8 @@ endif()
 find_package(gl_depth_sim REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+  pcl_conversions
+  pcl_ros
   roscpp
   tf2_ros
   tf2_eigen
@@ -17,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   CATKIN_DEPENDS
+    pcl_conversions
+    pcl_ros
     roscpp
     tf2_ros
     tf2_eigen
@@ -26,6 +30,8 @@ catkin_package(
 
 add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
 set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
+target_include_directories(${PROJECT_NAME}_laser_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_laser_example
   ${catkin_LIBRARIES}
   gl_depth_sim::gl_depth_sim_laser_scanner
@@ -33,6 +39,8 @@ target_link_libraries(${PROJECT_NAME}_laser_example
 
 add_executable(${PROJECT_NAME}_camera_example src/camera_example.cpp)
 set_target_properties(${PROJECT_NAME}_camera_example PROPERTIES OUTPUT_NAME camera_example PREFIX "")
+target_include_directories(${PROJECT_NAME}_camera_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_camera_example
   ${catkin_LIBRARIES}
   gl_depth_sim::gl_depth_sim_interfaces
