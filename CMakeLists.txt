@@ -6,8 +6,9 @@ add_compile_options(-std=c++14 -Wall -Wextra)
 find_package(catkin REQUIRED COMPONENTS
   roscpp # Used for ROS examples
   pcl_ros # Used for interfaces extension
-  tf # Used for ROS example
-  tf_conversions # Used for ROS example
+  tf2_ros # Used for ROS example
+  tf2_eigen # Used for ROS example
+  visualization_msgs # Used for ROS example
 )
 
 # Required for core functionality
@@ -22,7 +23,12 @@ find_package(OpenCV REQUIRED) # Used for interface extension
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
-  CATKIN_DEPENDS pcl_ros
+  CATKIN_DEPENDS
+    roscpp
+    pcl_ros
+    tf2_ros
+    tf2_eigen
+    visualization_msgs
   DEPENDS OpenCV
 )
 
@@ -43,9 +49,7 @@ add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/glad.c
   src/${PROJECT_NAME}/glfw_guard.cpp
 )
-
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(${PROJECT_NAME}
   ${OPENGL_LIBRARIES}
   ${ASSIMP_LIBRARIES}
@@ -58,20 +62,27 @@ add_library(${PROJECT_NAME}_interfaces
   src/interfaces/pcl_interface.cpp
   src/interfaces/opencv_interface.cpp
 )
-
 add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(${PROJECT_NAME}_interfaces
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
 
+# Simulated laser scanner library
+add_library(${PROJECT_NAME}_sim_laser_scanner
+  src/${PROJECT_NAME}/sim_laser_scanner.cpp
+)
+add_dependencies(${PROJECT_NAME}_interfaces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_sim_laser_scanner
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+)
+
 # Example showing basic usage
 add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
-
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
-
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
@@ -80,9 +91,7 @@ target_link_libraries(${PROJECT_NAME}_test
 
 # Example showing an orbiting camera
 add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
-
 set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
-
 target_link_libraries(${PROJECT_NAME}_orbit
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
@@ -91,16 +100,30 @@ target_link_libraries(${PROJECT_NAME}_orbit
 
 # Example showing orbiting camera with point cloud publishing in ROS
 add_executable(${PROJECT_NAME}_ros_orbit src/camera_ros_example.cpp)
-
 set_target_properties(${PROJECT_NAME}_ros_orbit PROPERTIES OUTPUT_NAME ros_example PREFIX "")
-
 target_link_libraries(${PROJECT_NAME}_ros_orbit
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces
   ${catkin_LIBRARIES}
 )
 
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
+# Example showing sweeping laser scan with point cloud publishing in ROS
+add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
+set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
+target_link_libraries(${PROJECT_NAME}_laser_example
+  ${PROJECT_NAME}_sim_laser_scanner
+  ${catkin_LIBRARIES}
+)
+
+install(
+  TARGETS
+    ${PROJECT_NAME}
+    ${PROJECT_NAME}_interfaces
+    ${PROJECT_NAME}_sim_laser_scanner
+    ${PROJECT_NAME}_test
+    ${PROJECT_NAME}_orbit
+    ${PROJECT_NAME}_ros_orbit
+    ${PROJECT_NAME}_laser_example
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -108,5 +131,16 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_interfaces
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
 )
+
+#############
+## Testing ##
+#############
+#if(CATKIN_ENABLE_TESTING)
+#  find_package(rostest REQUIRED)
+#  catkin_add_gtest(utest_node test/utest.cpp)
+#  target_link_libraries(utest_node
+#    ${catkin_LIBRARIES}
+#    ${PROJECT_NAME}_sim_laser_scanner
+#  )
+#endif()

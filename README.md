@@ -1,6 +1,6 @@
 # GL Depth Simulator
-This library simulates an organized depth camera by reading back a depth buffer after calling OpenGL to render a scene.
-I tried to write this package so that the core library had only a couple of dependencies and could stand on its own. The primary use case, however, is simulating depth data WITH hardware acceleration and WITHOUT needing to use Gazebo for ROS robotics development.
+This library simulates an organized depth camera and laser scanner by reading back a depth buffer after calling OpenGL to render a scene.
+I tried to write this package so that the core library had only a couple of dependencies and could stand on its own. The primary use case, however, is simulating depth data and laser scan data WITH hardware acceleration and WITHOUT needing to use Gazebo for ROS robotics development.
 
 ## Installation
 ### Dependencies
@@ -18,7 +18,7 @@ If you have ROS, you have everything but GLFW already. To get running:
 ```
 sudo apt install libglfw3-dev
 ```
-## Example
+## Depth Camera Example
 ![Stanford Dragon](docs/depth.gif)
 This scene shows the classic Stanford Dragon seen by a depth camera orbiting around the model. Rviz is used to display the clouds. This was taken directly from the ros example in the src/ directory. While the GIF is slow, the scan data is published at hundreds of frames per second.
 
@@ -28,6 +28,17 @@ rosrun gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
 ```
 
 You can also set the `_z` and `_radius` parameters.
+
+## Laser Scanner Example
+![Stanford Dragon](docs/laser.gif)
+This scene shows a line-scan of the same Stanford Dragon produced by a laser scanner with 360 degree field-of-view travelling of the surface of the mesh.
+Under the hood, a GL depth camera renders the scene 3 times at 120 degree rotational offsets to produce a single line of points in the simulated laser scan with 360 degree field of view.
+Various properties of the laser scanner, such as minimum and maximum range and angular resolution, are configurable.
+
+You can run this example in ROS by building this package in your workspace and running:
+```
+roslaunch gl_depth_sim laser_example.launch
+```
 
 ## Usage
 To use in a ROS context,  add a catkin dependency on `gl_depth_sim` and follow the idea of the following example:
