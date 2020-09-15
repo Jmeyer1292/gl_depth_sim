@@ -6,6 +6,7 @@ find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Extensions
 find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
