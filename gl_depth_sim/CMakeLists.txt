@@ -31,13 +31,14 @@ target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${ASSIMP_LIBRARIES}
   OpenGL::OpenGL
   glad
   dl
   glfw
-  Eigen3::Eigen
   )
 
 # Libaries for interfacing with opencv and pcl
