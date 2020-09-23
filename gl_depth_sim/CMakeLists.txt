@@ -8,6 +8,9 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
 
+find_package(Threads REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 # Extensions
 find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(OpenCV REQUIRED) # Used for interface extension
@@ -27,7 +30,7 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/shader_program.cpp
   src/${PROJECT_NAME}/glfw_guard.cpp)
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++14)
-target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx)
+target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx -pthread)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
