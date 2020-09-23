@@ -35,7 +35,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${ASSIMP_LIBRARIES}
-  OpenGL::OpenGL
+  ${OPENGL_LIBRARIES}
   glad
   dl
   glfw
