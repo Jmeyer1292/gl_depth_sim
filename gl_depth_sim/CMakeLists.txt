@@ -61,6 +61,7 @@ target_link_libraries(${PROJECT_NAME}_interfaces PUBLIC
 add_library(${PROJECT_NAME}_laser_scanner SHARED
   src/${PROJECT_NAME}/sim_laser_scanner.cpp
 )
+target_compile_options(${PROJECT_NAME}_laser_scanner PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>"

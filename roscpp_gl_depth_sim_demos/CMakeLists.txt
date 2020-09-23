@@ -30,6 +30,7 @@ catkin_package(
 
 add_executable(${PROJECT_NAME}_laser_example src/laser_example.cpp)
 set_target_properties(${PROJECT_NAME}_laser_example PROPERTIES OUTPUT_NAME laser_example PREFIX "")
+target_compile_options(${PROJECT_NAME}_laser_example PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME}_laser_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_laser_example
@@ -39,6 +40,7 @@ target_link_libraries(${PROJECT_NAME}_laser_example
 
 add_executable(${PROJECT_NAME}_camera_example src/camera_example.cpp)
 set_target_properties(${PROJECT_NAME}_camera_example PROPERTIES OUTPUT_NAME camera_example PREFIX "")
+target_compile_options(${PROJECT_NAME}_camera_example PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME}_camera_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_camera_example
