@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<library path="lib/libgl_depth_sim_simulator_plugins">
+  <class name="gl_depth_sim/ROSURDFSceneUpdaterPlugin"
+         type="gl_depth_sim::ROSURDFSceneUpdaterPlugin"
+         base_class_type="gl_depth_sim::SceneUpdaterPlugin">
+    <description>
+      Scene updater plugin that creates a scene from a URDF and updates it with transform information from TF
+    </description>
+  </class>
+  <class name="gl_depth_sim/DepthCameraPlugin"
+         type="gl_depth_sim::DepthCameraPlugin"
+         base_class_type="gl_depth_sim::RenderPlugin">
+    <description>
+      Render plugin for a 3D depth camera
+    </description>
+  </class>
+  <class name="gl_depth_sim/LaserScannerPlugin"
+         type="gl_depth_sim::LaserScannerPlugin"
+         base_class_type="gl_depth_sim::RenderPlugin">
+    <description>
+      Render plugin for a 2D laser scanner
+    </description>
+  </class>
+</library>
