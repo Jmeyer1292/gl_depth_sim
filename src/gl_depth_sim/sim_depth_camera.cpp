@@ -63,7 +63,6 @@ gl_depth_sim::SimDepthCamera::~SimDepthCamera()
   glDeleteFramebuffers(1, &fbo_);
 }
 
-
 gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isometry3d& pose)
 {
   // To OpenGL
@@ -114,9 +113,60 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   return img;
 }
 
+gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isometry3d &pose,
+                                                              const std::map<std::string, RenderableObjectState>& objects)
+{
+  // To OpenGL
+  Eigen::Isometry3d view_gl = (pose * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX())).inverse();
+
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_GREATER);
+  glClearDepth(0.0f);
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  glUseProgram(depth_program_->id());
+
+  // Render each object
+  for (const auto& obj : objects)
+  {
+    glBindVertexArray(obj.second.mesh->vao());
+
+    // compute mvp
+    Eigen::Projective3d mvp = proj_ * view_gl * obj.second.pose;
+    depth_program_->setUniformMat4("mvp", mvp.matrix().cast<float>());
+
+    glDrawElements(GL_TRIANGLES, obj.second.mesh->numIndices(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0); // no need to unbind it every time
+  }
+
+  // Pull depth data back from the GPU
+  DepthImage img (camera_.height, camera_.width); // (rows, cols)
+  glReadPixels(0, 0, camera_.width, camera_.height, GL_DEPTH_COMPONENT, GL_FLOAT, img.data.data());
+
+  // Transform the depth data from clip space 1/w back to linear depth. This is a subsection of the inverse of
+  // the projection matrix.
+  // eye_depth(b) = (zf * zn) / (b * (zf - zn) + zn)
+  // where zn = near z clipping distance, zf = far z clipping distance, b = sample from depth buffer
+  // in the case of b == 0.0f, we return 0.0f linear distance
+  const float zf_zn = camera_.z_far * camera_.z_near;
+  const float zf_minus_zn = camera_.z_far - camera_.z_near;
+  for (auto& depth : img.data)
+  {
+    if (depth != 0.0f)
+    {
+      depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
+    }
+  }
+
+  glfwSwapBuffers(window_);
+
+  return img;
+}
+
 bool gl_depth_sim::SimDepthCamera::add(const std::string mesh_id, const Mesh& mesh, const Eigen::Isometry3d& pose)
 {
-  std::unique_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
+  std::shared_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
 
   RenderableObjectState state;
   state.mesh = std::move(renderable_mesh);
@@ -129,7 +179,7 @@ bool gl_depth_sim::SimDepthCamera::add(const std::string mesh_id, const Mesh& me
 bool gl_depth_sim::SimDepthCamera::add( const Mesh& mesh, const Eigen::Isometry3d& pose)
 {
   const std::string mesh_id = "mesh" + std::to_string(rand()%1000);
-  std::unique_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
+  std::shared_ptr<RenderableMesh> renderable_mesh (new RenderableMesh{mesh});
 
   RenderableObjectState state;
   state.mesh = std::move(renderable_mesh);
@@ -144,8 +194,6 @@ bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::
   objects_[mesh_id].pose = pose;
   return true;
 }
-
-
 
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
