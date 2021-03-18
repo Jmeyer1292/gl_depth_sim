@@ -116,7 +116,7 @@ int main(int argc, char** argv)
     cloud_pub.publish(cloud);
 
     // Step 2: Publish the TF so we can see it in RViz
-    geometry_msgs::TransformStamped transform;
+    geometry_msgs::TransformStamped transform = tf2::eigenToTransform(pose);
     transform.header.frame_id = base_frame;
     transform.header.stamp = ros::Time::now();
     transform.child_frame_id = camera_frame;
