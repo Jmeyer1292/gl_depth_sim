@@ -180,7 +180,7 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
         throw std::runtime_error("Unable to load EGL.");
     }
 
-    std::cout << "EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
+    std::cout << "Initial EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
 
     display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display_ == EGL_NO_DISPLAY) {
@@ -190,6 +190,15 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
     if (!eglInitialize(display_, NULL, NULL)) {
         throw std::runtime_error("Unable to initialize EGL");
     }
+
+    egl_version = gladLoaderLoadEGL(display_);
+    if (!egl_version) {
+        throw std::runtime_error("Unable to reload EGL");
+    }
+
+    std::cout << "Reloaded EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
+
+    eglBindAPI(EGL_OPENGL_API);
 
     EGLint attr[] = {EGL_BUFFER_SIZE, 16, EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE};
     EGLConfig egl_config;
