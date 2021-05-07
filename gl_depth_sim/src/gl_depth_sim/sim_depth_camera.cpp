@@ -200,14 +200,31 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
     eglBindAPI(EGL_OPENGL_API);
 
-    EGLint attr[] = {EGL_BUFFER_SIZE, 16, EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE};
+    EGLint attr[] = {
+      EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+      EGL_BLUE_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_DEPTH_SIZE, 24,
+      EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+      EGL_CONFORMANT, EGL_OPENGL_BIT,
+      EGL_NONE
+    };
     EGLConfig egl_config;
     EGLint num_config;
     if (!eglChooseConfig(display_, attr, &egl_config, 1, &num_config)) {
       throw std::runtime_error("Failed to choose config (eglError: " + std::to_string(eglGetError()) + ")");
    }
 
-    EGLint ctxattr[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+    EGLint ctxattr[] = {
+      EGL_CONTEXT_MAJOR_VERSION, 4,
+      EGL_CONTEXT_MINOR_VERSION, 1,
+      EGL_CONTEXT_OPENGL_PROFILE_MASK,
+      EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+      EGL_NONE
+    };
+
     EGLContext egl_context = eglCreateContext(display_, egl_config, EGL_NO_CONTEXT, ctxattr);
     if (egl_context == EGL_NO_CONTEXT) {
       throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
