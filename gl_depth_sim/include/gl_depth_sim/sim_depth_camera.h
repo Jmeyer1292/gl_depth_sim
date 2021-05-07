@@ -12,9 +12,6 @@
 #include <vector>
 #include <map>
 
-// Foward declare GLFWWindow
-struct GLFWwindow;
-
 namespace gl_depth_sim
 {
 
@@ -87,7 +84,7 @@ private:
   std::map<std::string, RenderableObjectState> objects_;
 
   // OpenGL context info
-  GLFWwindow* window_;
+  void* display_;
   std::unique_ptr<ShaderProgram> depth_program_;
   unsigned int fbo_;
 };

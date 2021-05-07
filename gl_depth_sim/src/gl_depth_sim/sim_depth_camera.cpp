@@ -58,9 +58,6 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
 
 gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
-  /*
-  glfwDestroyWindow(window_);
-  */
   glDeleteFramebuffers(1, &fbo_);
 }
 
@@ -113,6 +110,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   /*
   glfwSwapBuffers(window_);
   */
+  eglSwapBuffers(display_, EGL_NO_SURFACE);
 
   return img;
 }
@@ -184,29 +182,29 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
     std::cout << "EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
 
-    EGLDisplay egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (egl_display == EGL_NO_DISPLAY) {
+    display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display_ == EGL_NO_DISPLAY) {
         throw std::runtime_error("Got no EGL display");
     }
 
-    if (!eglInitialize(egl_display, NULL, NULL)) {
+    if (!eglInitialize(display_, NULL, NULL)) {
         throw std::runtime_error("Unable to initialize EGL");
     }
 
     EGLint attr[] = {EGL_BUFFER_SIZE, 16, EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE};
     EGLConfig egl_config;
     EGLint num_config;
-    if (!eglChooseConfig(egl_display, attr, &egl_config, 1, &num_config)) {
+    if (!eglChooseConfig(display_, attr, &egl_config, 1, &num_config)) {
       throw std::runtime_error("Failed to choose config (eglError: " + std::to_string(eglGetError()) + ")");
    }
 
     EGLint ctxattr[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    EGLContext egl_context = eglCreateContext(egl_display, egl_config, EGL_NO_CONTEXT, ctxattr);
+    EGLContext egl_context = eglCreateContext(display_, egl_config, EGL_NO_CONTEXT, ctxattr);
     if (egl_context == EGL_NO_CONTEXT) {
       throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
     }
 
-    eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
+    eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
 
     int gles_version = gladLoaderLoadGLES2();
     if(!gles_version) {
