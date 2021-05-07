@@ -1,7 +1,6 @@
-#include "gl_depth_sim/glad/glad.h"
 #include "gl_depth_sim/sim_depth_camera.h"
-// OpenGL context
-#include <GLFW/glfw3.h>
+#include "gl_depth_sim/glad/egl.h"
+#include "gl_depth_sim/glad/gles2.h"
 
 #include <iostream>
 
@@ -59,7 +58,9 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
 
 gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
+  /*
   glfwDestroyWindow(window_);
+  */
   glDeleteFramebuffers(1, &fbo_);
 }
 
@@ -72,7 +73,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_GREATER);
-  glClearDepth(0.0f);
+  glClearDepthf(0.0f);
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(depth_program_->id());
@@ -109,7 +110,9 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
     }
   }
 
+  /*
   glfwSwapBuffers(window_);
+  */
 
   return img;
 }
@@ -149,6 +152,7 @@ bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::
 
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
+  /*
   //  glfwInit() is called by the glfw_guard object
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -170,9 +174,48 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
     glfwTerminate();
     throw std::runtime_error("Failed to initialize GLAD");
   }
+  */
 
-  std::cout << "GL_VERSION: " << GLVersion.major << "." << GLVersion.minor << "\n";
 
+    int egl_version = gladLoaderLoadEGL(NULL);
+    if (!egl_version) {
+        throw std::runtime_error("Unable to load EGL.");
+    }
+
+    std::cout << "EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
+
+    EGLDisplay egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (egl_display == EGL_NO_DISPLAY) {
+        throw std::runtime_error("Got no EGL display");
+    }
+
+    if (!eglInitialize(egl_display, NULL, NULL)) {
+        throw std::runtime_error("Unable to initialize EGL");
+    }
+
+    EGLint attr[] = {EGL_BUFFER_SIZE, 16, EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE};
+    EGLConfig egl_config;
+    EGLint num_config;
+    if (!eglChooseConfig(egl_display, attr, &egl_config, 1, &num_config)) {
+      throw std::runtime_error("Failed to choose config (eglError: " + std::to_string(eglGetError()) + ")");
+   }
+
+    EGLint ctxattr[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+    EGLContext egl_context = eglCreateContext(egl_display, egl_config, EGL_NO_CONTEXT, ctxattr);
+    if (egl_context == EGL_NO_CONTEXT) {
+      throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
+    }
+
+    eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
+
+    int gles_version = gladLoaderLoadGLES2();
+    if(!gles_version) {
+      throw std::runtime_error("Unable to load GLES");
+    }
+
+    std::cout << "GLES_VERSION: " << GLAD_VERSION_MAJOR(gles_version) << "." << GLAD_VERSION_MINOR(gles_version) << "\n";
+
+  /*
   // Enable clipping [0, 1]
   if (GLAD_GL_ARB_clip_control)
   {
@@ -183,9 +226,10 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
   {
     throw std::runtime_error("Your OpenGL context does not support glClipControl");
   }
+  */
 
   // Disable V-sync if we can
-  glfwSwapInterval(0);
+  // eglSwapInterval(egl_display, 0);
 }
 
 void gl_depth_sim::SimDepthCamera::createGLFramebuffer()

@@ -1,5 +1,5 @@
 #include "gl_depth_sim/renderable_mesh.h"
-#include "gl_depth_sim/glad/glad.h"
+#include "gl_depth_sim/glad/gles2.h"
 
 gl_depth_sim::RenderableMesh::RenderableMesh(const gl_depth_sim::Mesh& mesh)
   : num_indices_{mesh.numIndices()}

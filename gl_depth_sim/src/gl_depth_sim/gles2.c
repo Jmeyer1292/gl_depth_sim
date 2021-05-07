@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glad/gles2.h>
+#include <gl_depth_sim/glad/gles2.h>
 
 #ifndef GLAD_IMPL_UTIL_C_
 #define GLAD_IMPL_UTIL_C_
@@ -929,6 +929,177 @@ int gladLoadGLES2( GLADloadfunc load) {
 
  
 
+#ifdef GLAD_GLES2
+
+#ifndef GLAD_LOADER_LIBRARY_C_
+#define GLAD_LOADER_LIBRARY_C_
+
+#include <stddef.h>
+#include <stdlib.h>
+
+#if GLAD_PLATFORM_WIN32
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
+
+static void* glad_get_dlopen_handle(const char *lib_names[], int length) {
+    void *handle = NULL;
+    int i;
+
+    for (i = 0; i < length; ++i) {
+#if GLAD_PLATFORM_WIN32
+  #if GLAD_PLATFORM_UWP
+        size_t buffer_size = (strlen(lib_names[i]) + 1) * sizeof(WCHAR);
+        LPWSTR buffer = (LPWSTR) malloc(buffer_size);
+        if (buffer != NULL) {
+            int ret = MultiByteToWideChar(CP_ACP, 0, lib_names[i], -1, buffer, buffer_size);
+            if (ret != 0) {
+                handle = (void*) LoadPackagedLibrary(buffer, 0);
+            }
+            free((void*) buffer);
+        }
+  #else
+        handle = (void*) LoadLibraryA(lib_names[i]);
+  #endif
+#else
+        handle = dlopen(lib_names[i], RTLD_LAZY | RTLD_LOCAL);
+#endif
+        if (handle != NULL) {
+            return handle;
+        }
+    }
+
+    return NULL;
+}
+
+static void glad_close_dlopen_handle(void* handle) {
+    if (handle != NULL) {
+#if GLAD_PLATFORM_WIN32
+        FreeLibrary((HMODULE) handle);
+#else
+        dlclose(handle);
+#endif
+    }
+}
+
+static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
+    if (handle == NULL) {
+        return NULL;
+    }
+
+#if GLAD_PLATFORM_WIN32
+    return (GLADapiproc) GetProcAddress((HMODULE) handle, name);
+#else
+    return GLAD_GNUC_EXTENSION (GLADapiproc) dlsym(handle, name);
+#endif
+}
+
+#endif /* GLAD_LOADER_LIBRARY_C_ */
+
+#if GLAD_PLATFORM_EMSCRIPTEN
+  typedef void* (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
+  extern void* emscripten_GetProcAddress(const char *name);
+#else
+  #include <gl_depth_sim/glad/egl.h>
+#endif
+
+
+struct _glad_gles2_userptr {
+    void *handle;
+    PFNEGLGETPROCADDRESSPROC get_proc_address_ptr;
+};
+
+
+static GLADapiproc glad_gles2_get_proc(void *vuserptr, const char* name) {
+    struct _glad_gles2_userptr userptr = *(struct _glad_gles2_userptr*) vuserptr;
+    GLADapiproc result = NULL;
+
+#if !GLAD_PLATFORM_EMSCRIPTEN
+    result = glad_dlsym_handle(userptr.handle, name);
+#endif
+    if (result == NULL) {
+        result = userptr.get_proc_address_ptr(name);
+    }
+
+    return result;
+}
+
+static void* _gles2_handle = NULL;
+
+static void* glad_gles2_dlopen_handle(void) {
+#if GLAD_PLATFORM_EMSCRIPTEN
+#elif GLAD_PLATFORM_APPLE
+    static const char *NAMES[] = {"libGLESv2.dylib"};
+#elif GLAD_PLATFORM_WIN32
+    static const char *NAMES[] = {"GLESv2.dll", "libGLESv2.dll"};
+#else
+    static const char *NAMES[] = {"libGLESv2.so.2", "libGLESv2.so"};
+#endif
+
+#if GLAD_PLATFORM_EMSCRIPTEN
+    return NULL;
+#else
+    if (_gles2_handle == NULL) {
+        _gles2_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
+    }
+
+    return _gles2_handle;
+#endif
+}
+
+static struct _glad_gles2_userptr glad_gles2_build_userptr(void *handle) {
+    struct _glad_gles2_userptr userptr;
+#if GLAD_PLATFORM_EMSCRIPTEN
+    userptr.get_proc_address_ptr = emscripten_GetProcAddress;
+#else
+    userptr.handle = handle;
+    userptr.get_proc_address_ptr = eglGetProcAddress;
+#endif
+    return userptr;
+}
+
+int gladLoaderLoadGLES2(void) {
+    int version = 0;
+    void *handle = NULL;
+    int did_load = 0;
+    struct _glad_gles2_userptr userptr;
+
+#if GLAD_PLATFORM_EMSCRIPTEN
+    userptr.get_proc_address_ptr = emscripten_GetProcAddress;
+    version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
+#else
+    if (eglGetProcAddress == NULL) {
+        return 0;
+    }
+
+    did_load = _gles2_handle == NULL;
+    handle = glad_gles2_dlopen_handle();
+    if (handle != NULL) {
+        userptr = glad_gles2_build_userptr(handle);
+
+        version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
+
+        if (!version && did_load) {
+            gladLoaderUnloadGLES2();
+        }
+    }
+#endif
+
+    return version;
+}
+
+
+
+void gladLoaderUnloadGLES2(void) {
+    if (_gles2_handle != NULL) {
+        glad_close_dlopen_handle(_gles2_handle);
+        _gles2_handle = NULL;
+    }
+}
+
+#endif /* GLAD_GLES2 */
 
 #ifdef __cplusplus
 }
