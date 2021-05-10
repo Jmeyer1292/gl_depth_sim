@@ -15,7 +15,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(OpenCV REQUIRED) # Used for interface extension
 
-add_library(glad SHARED src/${PROJECT_NAME}/egl.c src/${PROJECT_NAME}/gles2.c)
+add_library(glad SHARED src/${PROJECT_NAME}/egl.c src/${PROJECT_NAME}/gl.c)
 target_include_directories(glad PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

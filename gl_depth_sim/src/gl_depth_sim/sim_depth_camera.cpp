@@ -1,6 +1,6 @@
 #include "gl_depth_sim/sim_depth_camera.h"
 #include "gl_depth_sim/glad/egl.h"
-#include "gl_depth_sim/glad/gles2.h"
+#include "gl_depth_sim/glad/gl.h"
 
 #include <iostream>
 
@@ -232,14 +232,13 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
     eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
 
-    int gles_version = gladLoaderLoadGLES2();
-    if(!gles_version) {
+    int gl_version = gladLoaderLoadGL();
+    if(!gl_version) {
       throw std::runtime_error("Unable to load GLES");
     }
 
-    std::cout << "GLES_VERSION: " << GLAD_VERSION_MAJOR(gles_version) << "." << GLAD_VERSION_MINOR(gles_version) << "\n";
+    std::cout << "GL_VERSION: " << GLAD_VERSION_MAJOR(gl_version) << "." << GLAD_VERSION_MINOR(gl_version) << "\n";
 
-  /*
   // Enable clipping [0, 1]
   if (GLAD_GL_ARB_clip_control)
   {
@@ -250,10 +249,9 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
   {
     throw std::runtime_error("Your OpenGL context does not support glClipControl");
   }
-  */
 
   // Disable V-sync if we can
-  // eglSwapInterval(egl_display, 0);
+  eglSwapInterval(display_, 0);
 }
 
 void gl_depth_sim::SimDepthCamera::createGLFramebuffer()

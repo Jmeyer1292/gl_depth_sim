@@ -1,5 +1,5 @@
 #include "gl_depth_sim/shader_program.h"
-#include <gl_depth_sim/glad/gles2.h>
+#include <gl_depth_sim/glad/gl.h>
 #include <iostream>
 #include <vector>
 
