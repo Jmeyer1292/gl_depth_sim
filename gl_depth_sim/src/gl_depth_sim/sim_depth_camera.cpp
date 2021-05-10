@@ -70,7 +70,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_GREATER);
-  glClearDepthf(0.0f);
+  glClearDepth(0.0f);
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(depth_program_->id());
@@ -107,9 +107,6 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
     }
   }
 
-  /*
-  glfwSwapBuffers(window_);
-  */
   eglSwapBuffers(display_, EGL_NO_SURFACE);
 
   return img;
@@ -150,31 +147,6 @@ bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::
 
 void gl_depth_sim::SimDepthCamera::initGLFW()
 {
-  /*
-  //  glfwInit() is called by the glfw_guard object
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_VISIBLE, false);
-
-  window_ = glfwCreateWindow(camera_.width, camera_.height, "gl_depth_sim", NULL, NULL);
-  if (window_ == NULL)
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to create GLFW window");
-  }
-
-  glfwMakeContextCurrent(window_);
-
-  // glad: load all OpenGL function pointers
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to initialize GLAD");
-  }
-  */
-
-
     int egl_version = gladLoaderLoadEGL(NULL);
     if (!egl_version) {
         throw std::runtime_error("Unable to load EGL.");
@@ -234,7 +206,7 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
     int gl_version = gladLoaderLoadGL();
     if(!gl_version) {
-      throw std::runtime_error("Unable to load GLES");
+      throw std::runtime_error("Unable to load OpenGL");
     }
 
     std::cout << "GL_VERSION: " << GLAD_VERSION_MAJOR(gl_version) << "." << GLAD_VERSION_MINOR(gl_version) << "\n";
