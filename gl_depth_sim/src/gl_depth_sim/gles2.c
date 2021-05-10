@@ -24,6 +24,7 @@ int GLAD_GL_ES_VERSION_2_0 = 0;
 int GLAD_GL_ES_VERSION_3_0 = 0;
 int GLAD_GL_ES_VERSION_3_1 = 0;
 int GLAD_GL_ES_VERSION_3_2 = 0;
+int GLAD_GL_EXT_clip_control = 0;
 
 
 
@@ -68,6 +69,7 @@ PFNGLCLEARCOLORPROC glad_glClearColor = NULL;
 PFNGLCLEARDEPTHFPROC glad_glClearDepthf = NULL;
 PFNGLCLEARSTENCILPROC glad_glClearStencil = NULL;
 PFNGLCLIENTWAITSYNCPROC glad_glClientWaitSync = NULL;
+PFNGLCLIPCONTROLEXTPROC glad_glClipControlEXT = NULL;
 PFNGLCOLORMASKPROC glad_glColorMask = NULL;
 PFNGLCOLORMASKIPROC glad_glColorMaski = NULL;
 PFNGLCOMPILESHADERPROC glad_glCompileShader = NULL;
@@ -757,6 +759,10 @@ static void glad_gl_load_GL_ES_VERSION_3_2( GLADuserptrloadfunc load, void* user
     glad_glTexParameterIuiv = (PFNGLTEXPARAMETERIUIVPROC) load(userptr, "glTexParameterIuiv");
     glad_glTexStorage3DMultisample = (PFNGLTEXSTORAGE3DMULTISAMPLEPROC) load(userptr, "glTexStorage3DMultisample");
 }
+static void glad_gl_load_GL_EXT_clip_control( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_GL_EXT_clip_control) return;
+    glad_glClipControlEXT = (PFNGLCLIPCONTROLEXTPROC) load(userptr, "glClipControlEXT");
+}
 
 
 
@@ -864,7 +870,7 @@ static int glad_gl_find_extensions_gles2( int version) {
     char **exts_i = NULL;
     if (!glad_gl_get_extensions(version, &exts, &num_exts_i, &exts_i)) return 0;
 
-    (void) glad_gl_has_extension;
+    GLAD_GL_EXT_clip_control = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_clip_control");
 
     glad_gl_free_extensions(exts_i, num_exts_i);
 
@@ -914,6 +920,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_ES_VERSION_3_2(load, userptr);
 
     if (!glad_gl_find_extensions_gles2(version)) return 0;
+    glad_gl_load_GL_EXT_clip_control(load, userptr);
 
 
 
