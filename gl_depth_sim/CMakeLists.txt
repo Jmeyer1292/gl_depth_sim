@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5.0)
 project(gl_depth_sim VERSION 0.2.0 LANGUAGES C CXX)
 
 # Required for core functionality
-find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
@@ -27,8 +26,7 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/mesh_loader.cpp
   src/${PROJECT_NAME}/mesh.cpp
   src/${PROJECT_NAME}/renderable_mesh.cpp
-  src/${PROJECT_NAME}/shader_program.cpp
-  src/${PROJECT_NAME}/glfw_guard.cpp)
+  src/${PROJECT_NAME}/shader_program.cpp)
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++14)
 target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx -pthread)
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -2,7 +2,6 @@
 #define GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 
 #include <gl_depth_sim/camera_properties.h>
-#include <gl_depth_sim/glfw_guard.h>
 #include <gl_depth_sim/renderable_mesh.h>
 #include <gl_depth_sim/shader_program.h>
 
@@ -73,10 +72,6 @@ public:
 private:
   void initGLFW();
   void createGLFramebuffer();
-
-  // Controls the starting and stopping of glfw - This MUST come before any objects containing
-  // opengl handles in this list.
-  GlfwGuard guard_;
 
   // State information
   CameraProperties camera_;
