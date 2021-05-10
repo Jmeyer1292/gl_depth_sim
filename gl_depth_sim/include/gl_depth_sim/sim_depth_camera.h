@@ -75,7 +75,7 @@ public:
   bool move(const std::string mesh_id, const Eigen::Isometry3d& pose);
 
 private:
-  void initGLFW();
+  void initEGL();
   void createGLFramebuffer();
 
   // State information

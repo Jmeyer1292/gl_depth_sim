@@ -47,7 +47,7 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
   , proj_(createProjectionMatrix(camera))
 {
   // Load GLFW and OpenGL libraries; create window; create extensions
-  initGLFW();
+  initEGL();
 
   // Creates an alternate frame buffer for offscreen rendering
   createGLFramebuffer();
@@ -157,7 +157,7 @@ bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::
 
 
 
-void gl_depth_sim::SimDepthCamera::initGLFW()
+void gl_depth_sim::SimDepthCamera::initEGL()
 {
     int egl_version = gladLoaderLoadEGL(NULL);
     if (!egl_version) {
