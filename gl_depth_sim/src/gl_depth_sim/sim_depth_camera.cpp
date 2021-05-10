@@ -170,7 +170,10 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
 
     std::cout << "Reloaded EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
 
-    eglBindAPI(EGL_OPENGL_API);
+    if(!eglBindAPI(EGL_OPENGL_API))
+    {
+      throw std::runtime_error("Unable to bind EGL API");
+    }
 
     EGLint attr[] = {
       EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
