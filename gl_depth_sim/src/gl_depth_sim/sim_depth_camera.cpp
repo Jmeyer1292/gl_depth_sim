@@ -205,7 +205,14 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
       throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
     }
 
-    eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
+
+    EGLint egl_pbuffer_attribs[] = {EGL_WIDTH, camera_.width, EGL_HEIGHT, camera_.height, EGL_NONE};
+    EGLSurface egl_surface = eglCreatePbufferSurface(display_, egl_config, egl_pbuffer_attribs);
+    if (egl_surface == EGL_NO_SURFACE) {
+        throw std::runtime_error("Unable to create EGL surface (eglError: " + std::to_string(eglGetError()) + ")");
+    }
+
+    eglMakeCurrent(display_, egl_surface, egl_surface, egl_context);
 
     int gl_version = gladLoaderLoadGL();
     if(!gl_version) {
