@@ -59,6 +59,18 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
 gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
   glDeleteFramebuffers(1, &fbo_);
+  if(surface_ != EGL_NO_SURFACE)
+  {
+    eglDestroySurface(display_, surface_);
+  }
+  if(context_ != EGL_NO_CONTEXT)
+  {
+    eglDestroyContext(display_, context_);
+  }
+  if(display_ != EGL_NO_DISPLAY)
+  {
+    eglTerminate(display_);
+  }
 }
 
 
@@ -200,19 +212,19 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
       EGL_NONE
     };
 
-    EGLContext egl_context = eglCreateContext(display_, egl_config, EGL_NO_CONTEXT, ctxattr);
-    if (egl_context == EGL_NO_CONTEXT) {
+    context_ = eglCreateContext(display_, egl_config, EGL_NO_CONTEXT, ctxattr);
+    if (context_ == EGL_NO_CONTEXT) {
       throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
     }
 
 
     EGLint egl_pbuffer_attribs[] = {EGL_WIDTH, camera_.width, EGL_HEIGHT, camera_.height, EGL_NONE};
-    EGLSurface egl_surface = eglCreatePbufferSurface(display_, egl_config, egl_pbuffer_attribs);
-    if (egl_surface == EGL_NO_SURFACE) {
+    surface_ = eglCreatePbufferSurface(display_, egl_config, egl_pbuffer_attribs);
+    if (surface_ == EGL_NO_SURFACE) {
         throw std::runtime_error("Unable to create EGL surface (eglError: " + std::to_string(eglGetError()) + ")");
     }
 
-    eglMakeCurrent(display_, egl_surface, egl_surface, egl_context);
+    eglMakeCurrent(display_, surface_, surface_, context_);
 
     int gl_version = gladLoaderLoadGL();
     if(!gl_version) {

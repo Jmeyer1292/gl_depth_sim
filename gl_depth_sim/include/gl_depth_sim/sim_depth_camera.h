@@ -42,6 +42,11 @@ class SimDepthCamera
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  /* Forward declare EGL types without including the large egl.h */
+  using EGLSurface = void*;
+  using EGLDisplay = void*;
+  using EGLContext = void*;
+
   /**
    * @brief Creates an OpenGL context and window using the given camera parameters. Only one of these should be created
    * at a time.
@@ -78,8 +83,11 @@ private:
   Eigen::Matrix4d proj_;
   std::map<std::string, RenderableObjectState> objects_;
 
-  // OpenGL context info
-  void* display_;
+  // OpenGL context
+  EGLDisplay display_;
+  EGLContext context_;
+  EGLSurface surface_;
+
   std::unique_ptr<ShaderProgram> depth_program_;
   unsigned int fbo_;
 };
