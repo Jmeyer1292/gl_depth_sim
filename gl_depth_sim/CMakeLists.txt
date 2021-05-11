@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(gl_depth_sim VERSION 0.2.0 LANGUAGES C CXX)
 
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
 # Required for core functionality
-find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -27,26 +29,22 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/mesh.cpp
   src/${PROJECT_NAME}/renderable_mesh.cpp
   src/${PROJECT_NAME}/shader_program.cpp)
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++14)
-target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx -pthread)
+target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${ASSIMP_LIBRARIES}
-  ${OPENGL_LIBRARIES}
   glad
   dl
-  glfw
+  Threads::Threads
+  Eigen3::Eigen
   )
 
 # Libaries for interfacing with opencv and pcl
 add_library(${PROJECT_NAME}_interfaces SHARED
   src/interfaces/pcl_interface.cpp
   src/interfaces/opencv_interface.cpp)
-target_compile_options(${PROJECT_NAME}_interfaces PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -62,7 +60,6 @@ target_link_libraries(${PROJECT_NAME}_interfaces PUBLIC
 add_library(${PROJECT_NAME}_laser_scanner SHARED
   src/${PROJECT_NAME}/sim_laser_scanner.cpp
 )
-target_compile_options(${PROJECT_NAME}_laser_scanner PRIVATE -std=c++14)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>"
@@ -74,7 +71,6 @@ target_link_libraries(${PROJECT_NAME}_laser_scanner PUBLIC
 
 # Example showing basic usage
 add_executable(${PROJECT_NAME}_test src/usage_example.cpp)
-target_compile_options(${PROJECT_NAME}_test PRIVATE -std=c++14)
 set_target_properties(${PROJECT_NAME}_test PROPERTIES OUTPUT_NAME depth_example PREFIX "")
 target_include_directories(${PROJECT_NAME}_test PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCEDIR}/include>"
@@ -85,7 +81,6 @@ target_link_libraries(${PROJECT_NAME}_test PUBLIC
 
 # Example showing an orbiting camera
 add_executable(${PROJECT_NAME}_orbit src/camera_orbit_example.cpp)
-target_compile_options(${PROJECT_NAME}_orbit PRIVATE -std=c++14)
 set_target_properties(${PROJECT_NAME}_orbit PROPERTIES OUTPUT_NAME orbit_example PREFIX "")
 target_include_directories(${PROJECT_NAME}_orbit PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
