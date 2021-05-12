@@ -1,10 +1,12 @@
 #ifndef GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 #define GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 
-#include "gl_depth_sim/camera_properties.h"
-#include "gl_depth_sim/glfw_guard.h"
-#include "gl_depth_sim/renderable_mesh.h"
-#include "gl_depth_sim/shader_program.h"
+#include <gl_depth_sim/camera_properties.h>
+#include <gl_depth_sim/glfw_guard.h>
+#include <gl_depth_sim/renderable_mesh.h>
+#include <gl_depth_sim/shader_program.h>
+
+#include <Eigen/Core>
 
 #include <memory>
 #include <vector>
@@ -16,6 +18,9 @@ struct GLFWwindow;
 namespace gl_depth_sim
 {
 
+template <typename T>
+using EigenAlignedVec = std::vector<T, Eigen::aligned_allocator<T>>;
+
 /**
  * @brief Utility data structure used internally by @class SimDepthCamera
  */
@@ -23,6 +28,7 @@ struct RenderableObjectState
 {
   std::unique_ptr<RenderableMesh> mesh;
   Eigen::Isometry3d pose;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /**
@@ -38,6 +44,8 @@ struct RenderableObjectState
 class SimDepthCamera
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   /**
    * @brief Creates an OpenGL context and window using the given camera parameters. Only one of these should be created
    * at a time.

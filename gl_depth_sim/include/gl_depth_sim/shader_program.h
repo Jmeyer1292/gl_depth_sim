@@ -19,6 +19,8 @@ public:
   void setInt(const std::string& attr, int val);
   void setUniformMat4(const std::string &attr, const Eigen::Matrix4f& mat);
 
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 private:
   unsigned int id_;
 };
