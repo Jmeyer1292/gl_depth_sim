@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5.0)
 project(gl_depth_sim VERSION 0.2.0 LANGUAGES C CXX)
 
 # Required for core functionality
-find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
@@ -15,7 +14,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(assimp REQUIRED) # Just used for loading models in mesh_loader.h
 find_package(OpenCV REQUIRED) # Used for interface extension
 
-add_library(glad SHARED src/${PROJECT_NAME}/glad.c)
+add_library(glad SHARED src/${PROJECT_NAME}/egl.c src/${PROJECT_NAME}/gl.c)
 target_include_directories(glad PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -27,8 +26,7 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/mesh_loader.cpp
   src/${PROJECT_NAME}/mesh.cpp
   src/${PROJECT_NAME}/renderable_mesh.cpp
-  src/${PROJECT_NAME}/shader_program.cpp
-  src/${PROJECT_NAME}/glfw_guard.cpp)
+  src/${PROJECT_NAME}/shader_program.cpp)
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++14)
 target_compile_options(${PROJECT_NAME} PUBLIC -mno-avx -pthread)
 target_include_directories(${PROJECT_NAME} PUBLIC
