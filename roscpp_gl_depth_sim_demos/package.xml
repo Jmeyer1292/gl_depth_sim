@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>roscpp_gl_depth_sim_demos</name>
+  <version>0.0.1</version>
+  <description>The roscpp_gl_depth_sim_demos package</description>
+
+  <maintainer email="Jmeyer1292@gmail.com">Jonathan Meyer</maintainer>
+
+  <license>LGPLv3</license>
+
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+
+  <depend condition="$ROS_VERSION == 1">gl_depth_sim</depend>
+  <depend condition="$ROS_VERSION == 1">pcl_conversions</depend>
+  <depend condition="$ROS_VERSION == 1">pcl_ros</depend>
+  <depend condition="$ROS_VERSION == 1">roscpp</depend>
+  <depend condition="$ROS_VERSION == 1">tf2_ros</depend>
+  <depend condition="$ROS_VERSION == 1">tf2_eigen</depend>
+  <depend condition="$ROS_VERSION == 1">visualization_msgs</depend>
+
+</package>
