@@ -1,7 +1,7 @@
 #include "gl_depth_sim/sim_depth_camera.h"
 #include "gl_depth_sim/mesh_loader.h"
 #include "gl_depth_sim/interfaces/pcl_interface.h"
-
+#include  "gl_depth_sim/interfaces/noise_model.h"
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
@@ -101,7 +101,9 @@ int main(int argc, char** argv)
 
     const auto pose = lookat(camera_pos, look_at, Eigen::Vector3d(0,0,1));
 
-    const auto depth_img = sim.render(pose);
+    auto depth_img = sim.render(pose);
+
+    depth_img.data  = gl_depth_sim::noise(depth_img.data);
 
     frame_counter++;
 
