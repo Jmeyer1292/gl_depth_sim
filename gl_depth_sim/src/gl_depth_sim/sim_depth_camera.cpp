@@ -30,7 +30,7 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
 {
   Eigen::Matrix4d m (Eigen::Matrix4d::Identity());
   // Organized by column
-  if(camera.projection == gl_depth_sim::CameraProperties::Perspective)
+  if(camera.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
   {
     m(0,0) = 2.0 * camera.fx / camera.width;
     m(1,1) = 2.0 * camera.fy / camera.height;
@@ -130,7 +130,7 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
   {
     if (depth != 0.0f)
     {
-      if(camera_.projection == gl_depth_sim::CameraProperties::Perspective)
+      if(camera_.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
       {
         depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
       }
