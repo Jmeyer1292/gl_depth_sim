@@ -1,20 +1,21 @@
 #ifndef GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 #define GL_DEPTH_SIM_SIM_DEPTH_CAMERA_H
 
-#include "gl_depth_sim/camera_properties.h"
-#include "gl_depth_sim/glfw_guard.h"
-#include "gl_depth_sim/renderable_mesh.h"
-#include "gl_depth_sim/shader_program.h"
+#include <gl_depth_sim/camera_properties.h>
+#include <gl_depth_sim/renderable_mesh.h>
+#include <gl_depth_sim/shader_program.h>
+
+#include <Eigen/Core>
 
 #include <memory>
 #include <vector>
 #include <map>
 
-// Foward declare GLFWWindow
-struct GLFWwindow;
-
 namespace gl_depth_sim
 {
+
+template <typename T>
+using EigenAlignedVec = std::vector<T, Eigen::aligned_allocator<T>>;
 
 /**
  * @brief Utility data structure used internally by @class SimDepthCamera
@@ -23,6 +24,7 @@ struct RenderableObjectState
 {
   std::unique_ptr<RenderableMesh> mesh;
   Eigen::Isometry3d pose;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /**
@@ -38,6 +40,13 @@ struct RenderableObjectState
 class SimDepthCamera
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  /* Forward declare EGL types without including the large egl.h */
+  using EGLSurface = void*;
+  using EGLDisplay = void*;
+  using EGLContext = void*;
+
   /**
    * @brief Creates an OpenGL context and window using the given camera parameters. Only one of these should be created
    * at a time.
@@ -66,20 +75,19 @@ public:
   bool move(const std::string mesh_id, const Eigen::Isometry3d& pose);
 
 private:
-  void initGLFW();
+  void initEGL();
   void createGLFramebuffer();
-
-  // Controls the starting and stopping of glfw - This MUST come before any objects containing
-  // opengl handles in this list.
-  GlfwGuard guard_;
 
   // State information
   CameraProperties camera_;
   Eigen::Matrix4d proj_;
   std::map<std::string, RenderableObjectState> objects_;
 
-  // OpenGL context info
-  GLFWwindow* window_;
+  // OpenGL context
+  EGLDisplay display_;
+  EGLContext context_;
+  EGLSurface surface_;
+
   std::unique_ptr<ShaderProgram> depth_program_;
   unsigned int fbo_;
 };

@@ -1,7 +1,6 @@
-#include "gl_depth_sim/glad/glad.h"
 #include "gl_depth_sim/sim_depth_camera.h"
-// OpenGL context
-#include <GLFW/glfw3.h>
+#include "gl_depth_sim/glad/egl.h"
+#include "gl_depth_sim/glad/gl.h"
 
 #include <iostream>
 
@@ -31,24 +30,36 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
 {
   Eigen::Matrix4d m (Eigen::Matrix4d::Identity());
   // Organized by column
-  m(0,0) = 2.0 * camera.fx / camera.width;
-  m(1,1) = 2.0 * camera.fy/ camera.height;
-  m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
-  m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
-  m(2,2) = camera.z_near / (camera.z_far - camera.z_near);
-  m(3,2) = -1.0;
-  m(2,3) = camera.z_far * camera.z_near / (camera.z_far - camera.z_near);
-  m(3,3) = 0.0;
+  if(camera.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
+  {
+    m(0,0) = 2.0 * camera.fx / camera.width;
+    m(1,1) = 2.0 * camera.fy / camera.height;
+    m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
+    m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
+    m(2,2) = camera.z_near / (camera.z_far - camera.z_near);
+    m(3,2) = -1.0;
+    m(2,3) = camera.z_far * camera.z_near / (camera.z_far - camera.z_near);
+    m(3,3) = 0.0;
+  }
+  else
+  {
+    m(0,0) = 2.0 * camera.fx / camera.width;
+    m(0,3) = 2.0 * camera.cx / camera.width - 1.0;
+    m(1,1) = 2.0 * camera.fy / camera.height;
+    m(1,3) = 1.0 - 2.0 * camera.cy / camera.height;
+    m(2,2) = 1.0 / (camera.z_far - camera.z_near);
+    m(2,3) = camera.z_far / (camera.z_far - camera.z_near);
+  }
 
   return m;
 }
 
 gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraProperties& camera)
-  : camera_{camera}
-  , proj_{createProjectionMatrix(camera)}
+  : camera_(camera)
+  , proj_(createProjectionMatrix(camera))
 {
   // Load GLFW and OpenGL libraries; create window; create extensions
-  initGLFW();
+  initEGL();
 
   // Creates an alternate frame buffer for offscreen rendering
   createGLFramebuffer();
@@ -59,8 +70,19 @@ gl_depth_sim::SimDepthCamera::SimDepthCamera(const gl_depth_sim::CameraPropertie
 
 gl_depth_sim::SimDepthCamera::~SimDepthCamera()
 {
-  glfwDestroyWindow(window_);
   glDeleteFramebuffers(1, &fbo_);
+  if(surface_ != EGL_NO_SURFACE)
+  {
+    eglDestroySurface(display_, surface_);
+  }
+  if(context_ != EGL_NO_CONTEXT)
+  {
+    eglDestroyContext(display_, context_);
+  }
+  if(display_ != EGL_NO_DISPLAY)
+  {
+    eglTerminate(display_);
+  }
 }
 
 
@@ -96,20 +118,30 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
 
   // Transform the depth data from clip space 1/w back to linear depth. This is a subsection of the inverse of
   // the projection matrix.
-  // eye_depth(b) = (zf * zn) / (b * (zf - zn) + zn)
+
+  // eye_depth(b) = (zf * zn) / (b * (zf - zn) + zn) (for perspective projections)
+  // eye_depth(b) = (b - zf / (zf - zn) * -(zf - zn) (for orthographic projections)
   // where zn = near z clipping distance, zf = far z clipping distance, b = sample from depth buffer
   // in the case of b == 0.0f, we return 0.0f linear distance
   const float zf_zn = camera_.z_far * camera_.z_near;
   const float zf_minus_zn = camera_.z_far - camera_.z_near;
+
   for (auto& depth : img.data)
   {
     if (depth != 0.0f)
     {
-      depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
+      if(camera_.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
+      {
+        depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
+      }
+      else
+      {
+        depth = (depth - camera_.z_far / (zf_minus_zn)) * -(zf_minus_zn);
+      }
     }
   }
 
-  glfwSwapBuffers(window_);
+  eglSwapBuffers(display_, EGL_NO_SURFACE);
 
   return img;
 }
@@ -147,31 +179,81 @@ bool gl_depth_sim::SimDepthCamera::move(const std::string mesh_id, const Eigen::
 
 
 
-void gl_depth_sim::SimDepthCamera::initGLFW()
+void gl_depth_sim::SimDepthCamera::initEGL()
 {
-  //  glfwInit() is called by the glfw_guard object
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_VISIBLE, false);
+    int egl_version = gladLoaderLoadEGL(NULL);
+    if (!egl_version) {
+        throw std::runtime_error("Unable to load EGL.");
+    }
 
-  window_ = glfwCreateWindow(camera_.width, camera_.height, "gl_depth_sim", NULL, NULL);
-  if (window_ == NULL)
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to create GLFW window");
-  }
+    std::cout << "Initial EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
 
-  glfwMakeContextCurrent(window_);
+    display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display_ == EGL_NO_DISPLAY) {
+        throw std::runtime_error("Got no EGL display");
+    }
 
-  // glad: load all OpenGL function pointers
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-  {
-    glfwTerminate();
-    throw std::runtime_error("Failed to initialize GLAD");
-  }
+    if (!eglInitialize(display_, NULL, NULL)) {
+        throw std::runtime_error("Unable to initialize EGL");
+    }
 
-  std::cout << "GL_VERSION: " << GLVersion.major << "." << GLVersion.minor << "\n";
+    egl_version = gladLoaderLoadEGL(display_);
+    if (!egl_version) {
+        throw std::runtime_error("Unable to reload EGL");
+    }
+
+    std::cout << "Reloaded EGL_VERSION: " << GLAD_VERSION_MAJOR(egl_version) << "." << GLAD_VERSION_MINOR(egl_version) << "\n";
+
+    if(!eglBindAPI(EGL_OPENGL_API))
+    {
+      throw std::runtime_error("Unable to bind EGL API");
+    }
+
+    EGLint attr[] = {
+      EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+      EGL_BLUE_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_DEPTH_SIZE, 24,
+      EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+      EGL_CONFORMANT, EGL_OPENGL_BIT,
+      EGL_NONE
+    };
+    EGLConfig egl_config;
+    EGLint num_config;
+    if (!eglChooseConfig(display_, attr, &egl_config, 1, &num_config)) {
+      throw std::runtime_error("Failed to choose config (eglError: " + std::to_string(eglGetError()) + ")");
+   }
+
+    EGLint ctxattr[] = {
+      EGL_CONTEXT_MAJOR_VERSION, 4,
+      EGL_CONTEXT_MINOR_VERSION, 1,
+      EGL_CONTEXT_OPENGL_PROFILE_MASK,
+      EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+      EGL_NONE
+    };
+
+    context_ = eglCreateContext(display_, egl_config, EGL_NO_CONTEXT, ctxattr);
+    if (context_ == EGL_NO_CONTEXT) {
+      throw std::runtime_error("Unable to create EGL context (eglError: " + std::to_string(eglGetError()) + ")");
+    }
+
+
+    EGLint egl_pbuffer_attribs[] = {EGL_WIDTH, camera_.width, EGL_HEIGHT, camera_.height, EGL_NONE};
+    surface_ = eglCreatePbufferSurface(display_, egl_config, egl_pbuffer_attribs);
+    if (surface_ == EGL_NO_SURFACE) {
+        throw std::runtime_error("Unable to create EGL surface (eglError: " + std::to_string(eglGetError()) + ")");
+    }
+
+    eglMakeCurrent(display_, surface_, surface_, context_);
+
+    int gl_version = gladLoaderLoadGL();
+    if(!gl_version) {
+      throw std::runtime_error("Unable to load OpenGL");
+    }
+
+    std::cout << "GL_VERSION: " << GLAD_VERSION_MAJOR(gl_version) << "." << GLAD_VERSION_MINOR(gl_version) << "\n";
 
   // Enable clipping [0, 1]
   if (GLAD_GL_ARB_clip_control)
@@ -185,7 +267,7 @@ void gl_depth_sim::SimDepthCamera::initGLFW()
   }
 
   // Disable V-sync if we can
-  glfwSwapInterval(0);
+  eglSwapInterval(display_, 0);
 }
 
 void gl_depth_sim::SimDepthCamera::createGLFramebuffer()

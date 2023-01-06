@@ -10,7 +10,6 @@ namespace gl_depth_sim
 template <typename T>
 using EigenAlignedVec = std::vector<T, Eigen::aligned_allocator<T>>;
 
-
 class Mesh
 {
 public:
@@ -21,6 +20,8 @@ public:
 
   const std::vector<unsigned>& indices() const { return indices_; }
   const EigenAlignedVec<Eigen::Vector3f>& vertices() const { return vertices_; }
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   EigenAlignedVec<Eigen::Vector3f> vertices_;
