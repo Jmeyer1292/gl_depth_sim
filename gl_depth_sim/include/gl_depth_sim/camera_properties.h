@@ -8,6 +8,9 @@ namespace gl_depth_sim
 
 struct CameraProperties
 {
+  enum class ProjectionType { Perspective, Orthographic };
+
+  ProjectionType projection = ProjectionType::Perspective;
   int width, height;
 
   float fx, fy;

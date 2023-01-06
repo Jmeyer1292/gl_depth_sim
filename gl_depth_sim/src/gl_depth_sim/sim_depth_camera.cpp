@@ -30,14 +30,26 @@ static Eigen::Matrix4d createProjectionMatrix(const gl_depth_sim::CameraProperti
 {
   Eigen::Matrix4d m (Eigen::Matrix4d::Identity());
   // Organized by column
-  m(0,0) = 2.0 * camera.fx / camera.width;
-  m(1,1) = 2.0 * camera.fy/ camera.height;
-  m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
-  m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
-  m(2,2) = camera.z_near / (camera.z_far - camera.z_near);
-  m(3,2) = -1.0;
-  m(2,3) = camera.z_far * camera.z_near / (camera.z_far - camera.z_near);
-  m(3,3) = 0.0;
+  if(camera.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
+  {
+    m(0,0) = 2.0 * camera.fx / camera.width;
+    m(1,1) = 2.0 * camera.fy / camera.height;
+    m(0,2) = 1.0 - 2.0 * camera.cx / camera.width;
+    m(1,2) = 2.0 * camera.cy / camera.height - 1.0;
+    m(2,2) = camera.z_near / (camera.z_far - camera.z_near);
+    m(3,2) = -1.0;
+    m(2,3) = camera.z_far * camera.z_near / (camera.z_far - camera.z_near);
+    m(3,3) = 0.0;
+  }
+  else
+  {
+    m(0,0) = 2.0 * camera.fx / camera.width;
+    m(0,3) = 2.0 * camera.cx / camera.width - 1.0;
+    m(1,1) = 2.0 * camera.fy / camera.height;
+    m(1,3) = 1.0 - 2.0 * camera.cy / camera.height;
+    m(2,2) = 1.0 / (camera.z_far - camera.z_near);
+    m(2,3) = camera.z_far / (camera.z_far - camera.z_near);
+  }
 
   return m;
 }
@@ -106,16 +118,26 @@ gl_depth_sim::DepthImage gl_depth_sim::SimDepthCamera::render(const Eigen::Isome
 
   // Transform the depth data from clip space 1/w back to linear depth. This is a subsection of the inverse of
   // the projection matrix.
-  // eye_depth(b) = (zf * zn) / (b * (zf - zn) + zn)
+
+  // eye_depth(b) = (zf * zn) / (b * (zf - zn) + zn) (for perspective projections)
+  // eye_depth(b) = (b - zf / (zf - zn) * -(zf - zn) (for orthographic projections)
   // where zn = near z clipping distance, zf = far z clipping distance, b = sample from depth buffer
   // in the case of b == 0.0f, we return 0.0f linear distance
   const float zf_zn = camera_.z_far * camera_.z_near;
   const float zf_minus_zn = camera_.z_far - camera_.z_near;
+
   for (auto& depth : img.data)
   {
     if (depth != 0.0f)
     {
-      depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
+      if(camera_.projection == gl_depth_sim::CameraProperties::ProjectionType::Perspective)
+      {
+        depth = zf_zn / (depth * (zf_minus_zn) + camera_.z_near);
+      }
+      else
+      {
+        depth = (depth - camera_.z_far / (zf_minus_zn)) * -(zf_minus_zn);
+      }
     }
   }
 
