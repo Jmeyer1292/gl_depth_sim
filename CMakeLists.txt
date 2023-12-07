@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gl_depth_sim)
 
-add_compile_options(-std=c++14 -Wall -Wextra)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_compile_options(-Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp # Used for ROS examples
