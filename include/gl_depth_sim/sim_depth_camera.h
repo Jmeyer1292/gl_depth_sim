@@ -21,7 +21,7 @@ namespace gl_depth_sim
  */
 struct RenderableObjectState
 {
-  std::unique_ptr<RenderableMesh> mesh;
+  std::shared_ptr<RenderableMesh> mesh;
   Eigen::Isometry3d pose;
 };
 
@@ -53,6 +53,7 @@ public:
    * @return A data structure that contains a linearized depth data matrix. See @class DepthImage.
    */
   DepthImage render(const Eigen::Isometry3d& pose);
+  DepthImage render(const Eigen::Isometry3d& pose, const std::map<std::string, RenderableObjectState>& objects);
 
   /**
    * @brief Adds a triangle mesh to the scene with the given pose in world coordinates.

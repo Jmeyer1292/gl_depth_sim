@@ -15,11 +15,17 @@
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
   <depend>pcl_ros</depend>
+  <depend>pluginlib</depend>
+  <depend>urdf</depend>
   <depend>visualization_msgs</depend>
 
   <!-- system dependency -->
   <build_depend>libglfw3-dev</build_depend>
   <depend>assimp</depend>
   <depend>libopencv-dev</depend>
+
+  <export>
+    <gl_depth_sim plugin="${prefix}/plugin_description.xml"/>
+  </export>
 
 </package>

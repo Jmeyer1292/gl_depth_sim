@@ -58,7 +58,8 @@ public:
    * @param scanner_pose
    * @return
    */
-  const pcl::PointCloud<pcl::PointXYZ> render(const Eigen::Isometry3d& scanner_pose);
+  pcl::PointCloud<pcl::PointXYZ> render(const Eigen::Isometry3d& scanner_pose);
+  pcl::PointCloud<pcl::PointXYZ> render(const Eigen::Isometry3d& scanner_pose, const std::map<std::string, RenderableObjectState>& scene);
 
   /**
    * @brief Adds a mesh to the renderable environment

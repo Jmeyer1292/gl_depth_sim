@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros # Used for interfaces extension
   tf2_ros # Used for ROS example
   tf2_eigen # Used for ROS example
+  pluginlib
+  urdf
   visualization_msgs # Used for ROS example
 )
 
@@ -32,6 +34,8 @@ catkin_package(
     pcl_ros
     tf2_ros
     tf2_eigen
+    pluginlib
+    urdf
     visualization_msgs
   DEPENDS OpenCV
 )
@@ -119,6 +123,26 @@ target_link_libraries(${PROJECT_NAME}_laser_example
   ${catkin_LIBRARIES}
 )
 
+add_library(${PROJECT_NAME}_simulator_plugins
+  src/simulator/ros_urdf_scene_updater.cpp
+  src/simulator/depth_camera_plugin.cpp
+  src/simulator/laser_scanner_plugin.cpp
+)
+target_link_libraries(${PROJECT_NAME}_simulator_plugins
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces
+  ${PROJECT_NAME}_sim_laser_scanner
+)
+
+add_executable(${PROJECT_NAME}_simulator
+  src/simulator/simulator.cpp
+)
+target_link_libraries(${PROJECT_NAME}_simulator
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+)
+
 install(
   TARGETS
     ${PROJECT_NAME}
@@ -128,6 +152,8 @@ install(
     ${PROJECT_NAME}_orbit
     ${PROJECT_NAME}_ros_orbit
     ${PROJECT_NAME}_laser_example
+    ${PROJECT_NAME}_simulator_plugins
+    ${PROJECT_NAME}_simulator
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -135,6 +161,10 @@ install(
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 #############
