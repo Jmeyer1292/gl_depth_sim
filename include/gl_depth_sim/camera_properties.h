@@ -1,8 +1,12 @@
 #ifndef GL_DEPTH_SIM_CAMERA_PROPERTIES_H
 #define GL_DEPTH_SIM_CAMERA_PROPERTIES_H
-
+#include <math.h>
 #include <vector>
-
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <map>
+#include <random>
 namespace gl_depth_sim
 {
 
