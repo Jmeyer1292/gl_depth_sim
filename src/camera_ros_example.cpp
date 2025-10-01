@@ -2,12 +2,12 @@
 #include "gl_depth_sim/mesh_loader.h"
 #include "gl_depth_sim/interfaces/pcl_interface.h"
 
-#include <pcl_ros/point_cloud.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <pcl_conversions/pcl_conversions.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <opencv2/highgui/highgui.hpp>
 #include "gl_depth_sim/interfaces/opencv_interface.h"
@@ -31,38 +31,48 @@ static Eigen::Isometry3d lookat(const Eigen::Vector3d& origin, const Eigen::Vect
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "ros_depth_sim_orbit");
-  ros::NodeHandle nh, pnh ("~");
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<rclcpp::Node>("ros_depth_sim_orbit");
+  auto logger = node->get_logger();
 
   // Setup ROS interfaces
-  ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1, true);
+  auto cloud_pub = node->create_publisher<sensor_msgs::msg::PointCloud2>("cloud", 1);
 
-  tf2_ros::TransformBroadcaster broadcaster;
+  tf2_ros::TransformBroadcaster broadcaster(*node);
+
+  // Declare ROS parameters
+  node->declare_parameter<std::string>("mesh");
+  node->declare_parameter<std::string>("base_frame", "world");
+  node->declare_parameter<std::string>("camera_frame", "camera");
+  node->declare_parameter<double>("radius", 1.0);
+  node->declare_parameter<double>("z", 1.0);
+  node->declare_parameter<double>("focal_length", 550.0);
+  node->declare_parameter<int>("width", 640);
+  node->declare_parameter<int>("height", 480);
 
   // Load ROS parameters
   std::string mesh_path;
-  if (!pnh.getParam("mesh", mesh_path))
+  if (!node->get_parameter("mesh", mesh_path))
   {
-    ROS_ERROR_STREAM("User must set the 'mesh' private parameter");
+    RCLCPP_ERROR(logger, "User must set the 'mesh' parameter");
+    rclcpp::shutdown();
     return 1;
   }
-  nh.getParam("/ros_example/mesh", mesh_path);
 
-  std::string base_frame = pnh.param<std::string>("base_frame", "world");
-  std::string camera_frame = pnh.param<std::string>("camera_frame", "camera");
+  std::string base_frame = node->get_parameter("base_frame").as_string();
+  std::string camera_frame = node->get_parameter("camera_frame").as_string();
 
-  double radius = pnh.param<double>("radius", 1.0);
-  double z = pnh.param<double>("z", 1.0);
-
-  double focal_length = pnh.param<double>("focal_length", 550.0);
-  int width = pnh.param<int>("width", 640);
-  int height = pnh.param<int>("height", 480);
+  double radius = node->get_parameter("radius").as_double();
+  double z = node->get_parameter("z").as_double();
+  double focal_length = node->get_parameter("focal_length").as_double();
+  int width = node->get_parameter("width").as_int();
+  int height = node->get_parameter("height").as_int();
 
   auto mesh_ptr = gl_depth_sim::loadMesh(mesh_path);
-
   if (!mesh_ptr)
   {
-    ROS_ERROR_STREAM("Unable to load mesh from path: " << mesh_path);
+    RCLCPP_ERROR(logger, "Unable to load mesh from path: %s", mesh_path.c_str());
+    rclcpp::shutdown();
     return 1;
   }
 
@@ -77,7 +87,7 @@ int main(int argc, char** argv)
   props.z_far = 10.0f;
 
   // Create the simulation
-  gl_depth_sim::SimDepthCamera sim (props);
+  gl_depth_sim::SimDepthCamera sim(props);
   sim.add("mesh_identifier", *mesh_ptr, Eigen::Isometry3d::Identity());
 
 
@@ -86,10 +96,7 @@ int main(int argc, char** argv)
   // In the main (rendering) thread, begin orbiting...
   const auto start = std::chrono::steady_clock::now();
 
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-  cloud.header.frame_id = camera_frame;
-
-  while (ros::ok())
+  while (rclcpp::ok())
   {
     double dt = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
 
@@ -111,14 +118,18 @@ int main(int argc, char** argv)
     }
 
     // Step 1: Publish the cloud
+    pcl::PointCloud<pcl::PointXYZ> cloud;
     gl_depth_sim::toPointCloudXYZ(props, depth_img, cloud);
-    pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-    cloud_pub.publish(cloud);
+    sensor_msgs::msg::PointCloud2 cloud_msg;
+    pcl::toROSMsg(cloud, cloud_msg);
+    cloud_msg.header.frame_id = camera_frame;
+    cloud_msg.header.stamp = node->now();
+    cloud_pub->publish(cloud_msg);
 
     // Step 2: Publish the TF so we can see it in RViz
-    geometry_msgs::TransformStamped transform = tf2::eigenToTransform(pose);
+    auto transform = tf2::eigenToTransform(pose);
     transform.header.frame_id = base_frame;
-    transform.header.stamp = ros::Time::now();
+    transform.header.stamp = node->now();
     transform.child_frame_id = camera_frame;
     broadcaster.sendTransform(transform);
 
@@ -126,7 +137,7 @@ int main(int argc, char** argv)
     gl_depth_sim::toCvImage16u(depth_img, img);
     cv::imwrite("img.png", img);
 
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
 
   return 0;

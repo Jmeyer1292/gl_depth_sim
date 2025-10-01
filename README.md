@@ -24,7 +24,7 @@ This scene shows the classic Stanford Dragon seen by a depth camera orbiting aro
 
 You can run this example in ROS by building this package in your workspace and running:
 ```
-rosrun gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
+ros2 run gl_depth_sim ros_example _mesh:=<PATH_TO_YOUR_MESH>
 ```
 
 You can also set the `_z` and `_radius` parameters.
@@ -37,7 +37,7 @@ Various properties of the laser scanner, such as minimum and maximum range and a
 
 You can run this example in ROS by building this package in your workspace and running:
 ```
-roslaunch gl_depth_sim laser_example.launch
+ros2 launch gl_depth_sim laser_example.launch.py
 ```
 
 ## Usage

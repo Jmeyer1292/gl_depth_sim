@@ -2,36 +2,25 @@
 #include <gl_depth_sim/mesh_loader.h>
 
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/point_cloud.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <pcl/io/vtk_lib_io.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <visualization_msgs/Marker.h>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
-template<typename T>
-bool get(const ros::NodeHandle &nh, const std::string &key, T &val)
+visualization_msgs::msg::Marker createMeshMarker(const Eigen::Isometry3d &pose,
+                                                 const std::string &frame,
+                                                 const std::string &mesh_resource)
 {
-  if (!nh.getParam(key, val))
-  {
-    ROS_ERROR_STREAM("Failed to get '" << key << "' parameter");
-    return false;
-  }
-  return true;
-}
-
-visualization_msgs::Marker createMeshMarker(const Eigen::Isometry3d &pose,
-                                            const std::string &frame,
-                                            const std::string &mesh_resource)
-{
-  visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker marker;
 
   marker.header.frame_id = frame;
   marker.id = 0;
   marker.ns = "mesh";
-  marker.action = visualization_msgs::Marker::ADD;
+  marker.action = visualization_msgs::msg::Marker::ADD;
 
-  marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+  marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
 
   // Check if the mesh resource does not use the "file://" or "package://" URI
   if (mesh_resource.find("file://") == std::string::npos
@@ -62,27 +51,45 @@ visualization_msgs::Marker createMeshMarker(const Eigen::Isometry3d &pose,
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "laser_node");
-  ros::NodeHandle nh, pnh("~");
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<rclcpp::Node>("laser_node");
+  auto logger = node->get_logger();
 
-  ros::Publisher cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("cloud", 1);
-  tf2_ros::TransformBroadcaster broadcaster;
-  std::string base_frame, camera_frame;
-  pnh.param<std::string>("base_frame", base_frame, "world");
-  pnh.param<std::string>("camera_frame", camera_frame, "camera");
+  // Create single-threaded executor and spin in a separate thread
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
+  std::thread spin_thread([&executor]() { executor.spin(); });
 
-  std::string mesh_filename;
-  if (!get(pnh, "mesh_filename", mesh_filename))
+  auto cloud_pub = node->create_publisher<sensor_msgs::msg::PointCloud2>("cloud", 1);
+  auto broadcaster = tf2_ros::TransformBroadcaster(*node);
+
+  // Declare parameters
+  node->declare_parameter<std::string>("base_frame", "world");
+  node->declare_parameter<std::string>("camera_frame", "camera");
+  node->declare_parameter<std::string>("mesh_filename");
+  node->declare_parameter<double>("min_range");
+  node->declare_parameter<double>("max_range");
+  node->declare_parameter<double>("angular_resolution");
+
+  // Get parameters
+  std::string base_frame, camera_frame, mesh_filename;
+  node->get_parameter("base_frame", base_frame);
+  node->get_parameter("camera_frame", camera_frame);
+
+  if (!node->get_parameter("mesh_filename", mesh_filename))
+  {
+    RCLCPP_ERROR(logger, "Parameter 'mesh_filename' is required.");
+    rclcpp::shutdown();
     return -1;
+  }
 
   // Get the laser scanner properties
   gl_depth_sim::LaserScannerProperties laser_scan_props;
-  if (!get(pnh, "min_range", laser_scan_props.min_range)
-      || !get(pnh, "max_range", laser_scan_props.max_range)
-      || !get(pnh, "angular_resolution", laser_scan_props.angular_resolution))
+  if (!node->get_parameter("min_range", laser_scan_props.min_range)
+      || !node->get_parameter("max_range", laser_scan_props.max_range)
+      || !node->get_parameter("angular_resolution", laser_scan_props.angular_resolution))
   {
+    rclcpp::shutdown();
     return -1;
   }
 
@@ -95,9 +102,9 @@ int main(int argc, char **argv)
   laser.add(*mesh_ptr, mesh_pose);
 
   // Publish a message with the mesh for visualization
-  ros::Publisher pub = nh.advertise<visualization_msgs::Marker>("object", 1, true);
-  visualization_msgs::Marker marker = createMeshMarker(mesh_pose, base_frame, mesh_filename);
-  pub.publish(marker);
+  auto pub = node->create_publisher<visualization_msgs::msg::Marker>("object", rclcpp::QoS(1).transient_local());
+  auto marker = createMeshMarker(mesh_pose, base_frame, mesh_filename);
+  pub->publish(marker);
 
   // Sweep the laser scanner back and forth across the surface of a part in the world y-axis direction
   //
@@ -108,30 +115,38 @@ int main(int argc, char **argv)
 
   std::size_t counter = 0;
   Eigen::Isometry3d scanner_pose(nominal_scanner_pose);
-  while (ros::ok())
+  while (rclcpp::ok())
   {
     pcl::PointCloud<pcl::PointXYZ> scan = laser.render(scanner_pose);
 
     // Publish the scan cloud
-    scan.header.frame_id = camera_frame;
-    pcl_conversions::toPCL(ros::Time::now(), scan.header.stamp);
-    cloud_pub.publish(scan);
+    sensor_msgs::msg::PointCloud2 scan_msg;
+    pcl::toROSMsg(scan, scan_msg);
+    scan_msg.header.frame_id = camera_frame;
+    scan_msg.header.stamp = node->now();
+    cloud_pub->publish(scan_msg);
 
     // Wait
-    ros::Duration(0.005).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(5));
 
     // Update the transform
     ++counter;
     double z = std::sin(static_cast<double>(counter) / 180.0) * sweep_distance;
     scanner_pose = nominal_scanner_pose * Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, z));
 
-    geometry_msgs::TransformStamped transform = tf2::eigenToTransform(scanner_pose);
+    auto transform = tf2::eigenToTransform(scanner_pose);
     transform.header.frame_id = base_frame;
-    transform.header.stamp = ros::Time::now();
+    transform.header.stamp = node->now();
     transform.child_frame_id = camera_frame;
     broadcaster.sendTransform(transform);
   }
 
-  ros::waitForShutdown();
+  executor.cancel();
+  spin_thread.join();
+
+  // Reset node before shutdown to avoid segfault (see ROS 2 issues)
+  node.reset();
+
+  rclcpp::shutdown();
   return 0;
 }
